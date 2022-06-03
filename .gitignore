@@ -130,3 +130,5 @@ dmypy.json
 
 # others
 src/EnBiD/Enbid-2.0
+jupyter/*
+!jupyter/*.ipynb
