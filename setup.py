@@ -10,7 +10,7 @@ import subprocess
 import urllib.request
 import distutils
 from distutils.errors import CompileError
-from distutils.command.build_ext import build_ext as CmdBuildExt
+from distutils.command.build_ext import build_ext
 from distutils.cmd import Command
 from distutils.core import setup
 
@@ -60,7 +60,7 @@ def all_files(*paths, basedir='.'):
 
 
 # Custom build step that manually creates the makefile and then calls 'make' to create the shared library
-class MyBuildExt(CmdBuildExt):
+class MyBuildExt(build_ext):
     def run(self):
         try:
             say("\nTesting if Enbid is available...")
