@@ -2,27 +2,14 @@
 """
 Docstring
 """
-import os
 import pathlib
 import subprocess
-import tempfile
 import numpy as np
 import pandas as pd
 
-from .constants import ENBID, ENBID_PARAMFILE_TEMPLATE
+from .constants import *
 
 __all__ = ['enbid']
-
-TEMP_DIR = tempfile.TemporaryDirectory()
-POS = 'pos'
-VEL = 'vel'
-TO_ENBID_FILENAME = 'to_enbid'
-ENBID_PARAMFILE = 'enbid_paramfile'
-USEDVALUES_SUFFIX = '_enbid-usedvalues'
-SNAPSHOT_FILEBASE = 'SnapshotFileBase'
-ENBID_OUT_EXT = 'est'
-
-USEDVALUES = '{}{}'.format(ENBID_PARAMFILE, USEDVALUES_SUFFIX)
 
 
 def make_path_of_name(name=None):
@@ -70,7 +57,8 @@ def return_enbid(name=None):
 def enbid(*args, **kwargs):
     points = args[0]
     name = kwargs.get('name', None)
-    return return_enbid(run_enbid(write_for_enbid(points, name=name)))
+    ngb = kwargs.get('ngb', 64)
+    return return_enbid(run_enbid(write_for_enbid(points, name=name), ngb=ngb))
 
 
 if __name__ == '__main__':

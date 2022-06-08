@@ -2,7 +2,6 @@
 """
 Credit to https://github.com/GalacticDynamics-Oxford/Agama/blob/master/setup.py for tools
 """
-import os
 import pathlib
 import sys
 import re
@@ -15,25 +14,22 @@ from distutils.command.build_ext import build_ext as CmdBuildExt
 from distutils.cmd import Command
 from distutils.core import setup
 
-ROOT_DIR = os.path.split(os.path.abspath(__file__))[0]
+ROOT_DIR = pathlib.Path(__file__).parent
 NAME = 'EnBiD'
 LOG_DIR = 'log'
 SRC_DIR = 'src'
 
 ENBID2 = eval(subprocess.check_output(["grep", "ENBID2 =",
-                                       os.path.join(ROOT_DIR, SRC_DIR, NAME, "constants.py")]).decode().split('=')[-1])
+                                       ROOT_DIR / SRC_DIR / NAME / "constants.py"]).decode().split('=')[-1])
 for_all_files = (ENBID2,)
 
-try:
-    os.mkdir(os.path.join(ROOT_DIR, LOG_DIR))
-except FileExistsError:
-    pass
+(ROOT_DIR / LOG_DIR).mkdir(parents=True, exist_ok=True)
 
 long_description = ""
 
 # metadata are set in the below file, but use this here to avoid warnings.
 __author__ = __copyright__ = __credits__ = __license__ = __version__ = __maintainer__ = __email__ = __status__ = None
-exec(open(os.path.join(ROOT_DIR, SRC_DIR, NAME, "__metadata__.py")).read())
+exec(open(ROOT_DIR / SRC_DIR / NAME / "__metadata__.py").read())
 
 
 # force printing to the terminal even if stdout was redirected
@@ -54,10 +50,10 @@ def say(text):
 
 # get the list of all files in the given directories (including those in nested directories)
 def all_files(*paths, basedir='.'):
-    basedir = os.path.normpath(basedir) + os.sep
-    return [os.path.join(dirpath, f)[len(basedir):]
+    basedir = pathlib.Path(basedir)
+    return [pathlib.Path(dirpath, f).relative_to(basedir)
             for path in paths
-            for dirpath, dirnames, files in os.walk(basedir + path)
+            for dirpath, dirnames, files in pathlib.os.walk(basedir / path)
             for f in files]
 
 
@@ -74,16 +70,16 @@ class MyBuildExt(CmdBuildExt):
         enbid_exists = False  # TODO
         if not enbid_exists:
             say("\nDownloading Enbid")
-            enbid_dir = os.path.join(SRC_DIR, NAME, ENBID2)
-            tarfile = os.path.join(ROOT_DIR, enbid_dir + '.tar.gz')
+            enbid_dir = pathlib.Path(SRC_DIR, NAME, ENBID2)
+            tarfile = ROOT_DIR / enbid_dir.with_suffix('.tar.gz')
             try:
                 urllib.request.urlretrieve('https://sourceforge.net/projects/enbid/files/latest/download',
                                            filename=tarfile)
-                if os.path.isfile(tarfile):
+                if tarfile.is_file():
                     say("\nUnpacking Enbid")
-                    subprocess.call(['tar', 'xzvf', tarfile, '-C', os.path.split(tarfile)[0]])
-                    os.remove(tarfile)
-                    if not os.path.isdir(enbid_dir):
+                    subprocess.call(['tar', 'xzvf', tarfile, '-C', tarfile.parent])
+                    tarfile.unlink()
+                    if not enbid_dir.is_dir():
                         raise RuntimeError("Error unpacking Enbid")
                 else:
                     raise RuntimeError("Cannot find downloaded file")
@@ -91,19 +87,16 @@ class MyBuildExt(CmdBuildExt):
                 raise CompileError(str(e) + "\nError downloading Enbid, aborting...\n")
             say("\nCompiling Enbid")
             # CONFIGURING MAKEFILE #
-            makefile = os.path.join(ROOT_DIR, enbid_dir, 'src', 'Makefile')
+            makefile = ROOT_DIR / enbid_dir / 'src' / 'Makefile'
             for line in fileinput.input(makefile, inplace=True):
                 if bool(re.match(r".*OPT2.*=", line)):
                     line = re.sub(r'.*OPT2',  '{}OPT2'.format('' if re.match(r".*-DDIM3", line) else '#'), line)
                 print(line, end='')
             # END CONFIGURATION #
-            result = subprocess.call('(cd ' + os.path.join(ROOT_DIR, enbid_dir, 'src') + '; make) > ' +
-                                     os.path.join('.', LOG_DIR, 'Enbid-make.log'),
-                                     shell=True)
-            if result != 0 or not os.path.isfile(os.path.join(enbid_dir, 'Enbid')):
-                raise CompileError("Enbid compilation failed (check " +
-                                   os.path.join(".", LOG_DIR, "Enbid-make.log") + ")")
-            os.chdir(ROOT_DIR)
+            with pathlib.Path('.', LOG_DIR, 'Enbid-make.log').open('w') as f:
+                result = subprocess.call(f"make", cwd=ROOT_DIR / enbid_dir / 'src', stdout=f, stderr=f)
+            if result != 0 or not (enbid_dir / 'Enbid').is_file():
+                raise CompileError(f"Enbid compilation failed (check {pathlib.Path('.', LOG_DIR, 'Enbid-make.log')})")
 
 
 class MyTest(Command):
@@ -142,7 +135,7 @@ setup(name=NAME,
       python_requires='>=3',
       packages=[NAME],
       package_dir={'': SRC_DIR},
-      package_data={NAME: all_files(*for_all_files, basedir=os.path.join(SRC_DIR, NAME))},
+      package_data={NAME: all_files(*for_all_files, basedir=pathlib.Path(SRC_DIR, NAME))},
       include_package_data=True,
       install_requires=['numpy', 'pandas'],
       ext_modules=[distutils.extension.Extension('', [])],
