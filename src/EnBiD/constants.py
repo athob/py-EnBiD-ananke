@@ -2,13 +2,14 @@
 """
 Package parameters
 """
-import os
+import pathlib
 import tempfile
 from string import Template
 
 __all__ = ['ENBID', 'TO_ENBID_FILENAME', 'ENBID_PARAMFILE', 'USEDVALUES', 'SNAPSHOT_FILEBASE', 'ENBID_OUT_EXT', 'ENBID_PARAMFILE_TEMPLATE']
 
 ENBID2 = 'Enbid-2.0'
+ENBID_URL = 'https://sourceforge.net/projects/enbid/files/latest/download'
 ENBID_EXEC = 'Enbid'
 
 TO_ENBID_FILENAME = 'to_enbid'
@@ -56,8 +57,8 @@ PeriodicBoundaryOn 0
 
 TEMP_DIR = tempfile.TemporaryDirectory()
 
-ENBID_CPP = os.path.join(os.path.split(os.path.abspath(__file__))[0], ENBID2)
-ENBID = os.path.join(ENBID_CPP, ENBID_EXEC)
+ENBID_CPP = pathlib.Path(__file__).resolve().parent / ENBID2
+ENBID = ENBID_CPP / ENBID_EXEC
 
 USEDVALUES = '{}{}'.format(ENBID_PARAMFILE, USEDVALUES_SUFFIX)
 

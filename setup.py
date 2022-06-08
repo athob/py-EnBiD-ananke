@@ -21,6 +21,8 @@ SRC_DIR = 'src'
 
 ENBID2 = eval(subprocess.check_output(["grep", "ENBID2 =",
                                        ROOT_DIR / SRC_DIR / NAME / "constants.py"]).decode().split('=')[-1])
+ENBID_URL = eval(subprocess.check_output(["grep", "ENBID_URL =",
+                                          ROOT_DIR / SRC_DIR / NAME / "constants.py"]).decode().split('=')[-1])
 for_all_files = (ENBID2,)
 
 (ROOT_DIR / LOG_DIR).mkdir(parents=True, exist_ok=True)
@@ -51,7 +53,7 @@ def say(text):
 # get the list of all files in the given directories (including those in nested directories)
 def all_files(*paths, basedir='.'):
     basedir = pathlib.Path(basedir)
-    return [pathlib.Path(dirpath, f).relative_to(basedir)
+    return [str(pathlib.Path(dirpath, f).relative_to(basedir))
             for path in paths
             for dirpath, dirnames, files in pathlib.os.walk(basedir / path)
             for f in files]
@@ -73,8 +75,7 @@ class MyBuildExt(CmdBuildExt):
             enbid_dir = pathlib.Path(SRC_DIR, NAME, ENBID2)
             tarfile = ROOT_DIR / enbid_dir.with_suffix('.tar.gz')
             try:
-                urllib.request.urlretrieve('https://sourceforge.net/projects/enbid/files/latest/download',
-                                           filename=tarfile)
+                urllib.request.urlretrieve(ENBID_URL, filename=tarfile)
                 if tarfile.is_file():
                     say("\nUnpacking Enbid")
                     subprocess.call(['tar', 'xzvf', tarfile, '-C', tarfile.parent])
