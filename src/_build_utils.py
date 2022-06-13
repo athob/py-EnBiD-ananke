@@ -45,7 +45,8 @@ def all_files(*paths, basedir='.'):
 
 def download_enbid(enbid_dir):
     say("\nDownloading Enbid")
-    shutil.rmtree(enbid_dir)
+    if enbid_dir.is_dir():
+        shutil.rmtree(enbid_dir)
     tarfile = enbid_dir.with_suffix('.tar.gz')
     try:
         urllib.request.urlretrieve(ENBID_URL, filename=tarfile)
