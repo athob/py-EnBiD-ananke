@@ -2,16 +2,24 @@
 """
 Package parameters
 """
-import os
+import pathlib
+import tempfile
 from string import Template
 
-__all__ = ['ENBID', 'ENBID_PARAMFILE_TEMPLATE']
+__all__ = ['NAME', 'LOG_DIR', 'SRC_DIR', 'ENBID2', 'ENBID_URL', 'ENBID', 'TO_ENBID_FILENAME', 'ENBID_PARAMFILE', 'USEDVALUES', 'SNAPSHOT_FILEBASE', 'ENBID_OUT_EXT', 'ENBID_PARAMFILE_TEMPLATE']
 
+NAME = 'EnBiD'
 ENBID2 = 'Enbid-2.0'
-ENBID_CPP = os.path.join(os.path.split(os.path.abspath(__file__))[0], ENBID2)
+ENBID_URL = 'https://sourceforge.net/projects/enbid/files/latest/download'
 ENBID_EXEC = 'Enbid'
+LOG_DIR = 'log'
+SRC_DIR = 'src'
 
-ENBID = os.path.join(ENBID_CPP, ENBID_EXEC)
+TO_ENBID_FILENAME = 'to_enbid'
+ENBID_PARAMFILE = 'enbid_paramfile'
+USEDVALUES_SUFFIX = '_enbid-usedvalues'
+SNAPSHOT_FILEBASE = 'SnapshotFileBase'
+ENBID_OUT_EXT = 'est'
 
 ENBID_PARAMFILE_TEMPLATE = Template("""%  Input and Output
 InitCondFile     ${fname}
@@ -48,3 +56,12 @@ DesNumNgbA             64   % Neighbors for cal covar metric for Anisotropic Ker
 TypeListOn        0
 PeriodicBoundaryOn 0
 %--------------------------------------------------------""")
+
+
+TEMP_DIR = tempfile.TemporaryDirectory()
+
+ENBID_CPP = pathlib.Path(__file__).resolve().parent / ENBID2
+ENBID = ENBID_CPP / ENBID_EXEC
+
+USEDVALUES = '{}{}'.format(ENBID_PARAMFILE, USEDVALUES_SUFFIX)
+
