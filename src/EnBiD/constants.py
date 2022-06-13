@@ -6,11 +6,14 @@ import pathlib
 import tempfile
 from string import Template
 
-__all__ = ['ENBID', 'TO_ENBID_FILENAME', 'ENBID_PARAMFILE', 'USEDVALUES', 'SNAPSHOT_FILEBASE', 'ENBID_OUT_EXT', 'ENBID_PARAMFILE_TEMPLATE']
+__all__ = ['NAME', 'LOG_DIR', 'SRC_DIR', 'ENBID2', 'ENBID_URL', 'ENBID', 'TO_ENBID_FILENAME', 'ENBID_PARAMFILE', 'USEDVALUES', 'SNAPSHOT_FILEBASE', 'ENBID_OUT_EXT', 'ENBID_PARAMFILE_TEMPLATE']
 
+NAME = 'EnBiD'
 ENBID2 = 'Enbid-2.0'
 ENBID_URL = 'https://sourceforge.net/projects/enbid/files/latest/download'
 ENBID_EXEC = 'Enbid'
+LOG_DIR = 'log'
+SRC_DIR = 'src'
 
 TO_ENBID_FILENAME = 'to_enbid'
 ENBID_PARAMFILE = 'enbid_paramfile'
