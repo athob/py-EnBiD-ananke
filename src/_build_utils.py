@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Docstring
+Contains the EnBiD module building utility tools.
 """
 import pathlib
 import shutil
@@ -66,7 +66,7 @@ def download_enbid(enbid_dir):
 def configure_enbid(enbid_dir):
     makefile = enbid_dir / 'src' / 'Makefile'
     for line in fileinput.input(makefile, inplace=True):
-        if bool(re.match(r".*OPT2.*=", line)):
+        if bool(re.match(r".*OPT2.*=", line)):  # TODO have both 3D and 6D version separately available
             line = re.sub(r'.*OPT2',  '{}OPT2'.format('' if re.match(r".*-DDIM3", line) else '#'), line)
         print(line, end='')
 

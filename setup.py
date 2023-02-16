@@ -20,6 +20,14 @@ for_all_files = (ENBID2,)
 
 long_description = ""
 
+########## This can't be in MyBuildExt ##########
+enbid_dir = ROOT_DIR / SRC_DIR / NAME / ENBID2
+download_enbid(enbid_dir)
+compile_enbid(enbid_dir)
+############## Because of that bit ##############
+package_data = {NAME: all_files(*for_all_files,
+                                basedir=pathlib.Path(SRC_DIR, NAME))}
+#################################################
 
 
 # Custom build step that manually creates the makefile and then calls 'make' to create the shared library
@@ -34,9 +42,12 @@ class MyBuildExt(build_ext):
         #     enbid_exists = False
         enbid_exists = False  # TODO
         if not enbid_exists:
-            enbid_dir = ROOT_DIR / SRC_DIR / NAME / ENBID2
-            download_enbid(enbid_dir)
-            compile_enbid(enbid_dir)
+            ########## This can't be in MyBuildExt ##########
+            # enbid_dir = ROOT_DIR / SRC_DIR / NAME / ENBID2
+            # download_enbid(enbid_dir)
+            # compile_enbid(enbid_dir)
+            #################################################
+            pass
 
 
 class MyTest(Command):
@@ -75,7 +86,7 @@ setup(name=NAME,
       python_requires='>=3',
       packages=[NAME],
       package_dir={'': SRC_DIR},
-      package_data={NAME: all_files(*for_all_files, basedir=pathlib.Path(SRC_DIR, NAME))},
+      package_data=package_data,
       include_package_data=True,
       install_requires=['numpy', 'pandas'],
       ext_modules=[distutils.extension.Extension('', [])],

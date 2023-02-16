@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Package parameters
+Contains the EnBiD module constants.
 """
 import pathlib
 import tempfile
@@ -63,5 +63,5 @@ TEMP_DIR = tempfile.TemporaryDirectory()
 ENBID_CPP = pathlib.Path(__file__).resolve().parent / ENBID2
 ENBID = ENBID_CPP / ENBID_EXEC
 
-USEDVALUES = '{}{}'.format(ENBID_PARAMFILE, USEDVALUES_SUFFIX)
+USEDVALUES = f"{ENBID_PARAMFILE}{USEDVALUES_SUFFIX}"
 
