@@ -1,1 +1,1 @@
-EnBiD/__metadata__.py
+EnBiD_ananke/__metadata__.py

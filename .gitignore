@@ -129,6 +129,6 @@ dmypy.json
 .pyre/
 
 # others
-src/EnBiD/Enbid-2.0
+src/*/Enbid-2.0
 jupyter/*
 !jupyter/*.ipynb
