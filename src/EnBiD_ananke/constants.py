@@ -46,7 +46,7 @@ VolCorr              1    %  0) Disbale 1) Enable
 %--------------------------------------------------------
 % Kernel smoothing  related options
 % 0) B-Spline 1)top hat 2)Bi_weight (1-x^2)^2 3)Epanechikov 4)CIC 5)TSC
-TypeOfKernel           3
+TypeOfKernel           ${type_of_kernel}
 KernelBiasCorrection   1    % 0)none 1)shift central particle
 AnisotropicKernel      1    % 0) Isotropic 1) Anisotropic
 Anisotropy             0    % fix minimum c/a minor/major axis ratio

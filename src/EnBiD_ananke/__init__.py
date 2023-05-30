@@ -83,7 +83,7 @@ def write_for_enbid(points, name=None):
     return path
 
 
-def run_enbid(name=None, ngb=64):
+def run_enbid(name=None, ngb=64, type_of_kernel=3):
     """
         Run EnBiD using input files in name.
 
@@ -108,7 +108,7 @@ def run_enbid(name=None, ngb=64):
     """
     path = make_path_of_name(name)
     with open(path / ENBID_PARAMFILE, 'w') as f:
-        f.write(ENBID_PARAMFILE_TEMPLATE.substitute(fname=TO_ENBID_FILENAME, ngb=ngb))
+        f.write(ENBID_PARAMFILE_TEMPLATE.substitute(fname=TO_ENBID_FILENAME, ngb=ngb, type_of_kernel=type_of_kernel))
     subprocess.call([ENBID, ENBID_PARAMFILE], cwd=path)
     return path
 
