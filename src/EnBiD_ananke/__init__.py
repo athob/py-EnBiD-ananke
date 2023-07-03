@@ -83,7 +83,7 @@ def write_for_enbid(points, name=None):
     return path
 
 
-def run_enbid(name=None, ngb=64, type_of_kernel=3):
+def run_enbid(name=None, ngb=DEFAULT_NGB, **kwargs):
     """
         Run EnBiD using input files in name.
 
@@ -99,7 +99,91 @@ def run_enbid(name=None, ngb=64, type_of_kernel=3):
 
         ngb : int
             Number of neighbouring particles EnBiD should consider in the
-            kernel density estimation. Default to 64.
+            smoothing for the density estimation. Default to {DEFAULT_NGB}.
+
+        spatial_scale : float
+            Scaling between position and velocity space where the scaling goes
+            as velocity = position/spatial_scale if spatial_scale is set
+            strictly positive, or velocity = position/std(position) if
+            spatial_scale is set to 0 (with std representing the standard
+            deviation for each coordinate). Default to 1 - TODO currently not
+            implemented.
+        
+        part_bounday : int
+            Minimum number of particles which a node must contain to have a
+            boundary correction applied to its surfaces during tree generation.
+            Optimum choice should be whichever the higher between 7 or d+1
+            where d is the dimensionality of the space considered.
+            Default to 7.
+        
+        node_splitting_criterion : int (0, 1)
+            Flag to allow for the node splitting to always split in priority
+            the dimension with lowest Shannon entropy. If set to 0, the
+            criteria splits each dimension alternately. Default to 1.
+        
+        cubic_cells : int (0, 1)
+            Flag to allow the node splitting to use position or velocity
+            subspaces rather than individual dimensions when generating cells.
+            Only work for 3 & 6 dimensional spaces. Default to 0 - TODO
+            currently not implemented.
+        
+        median_splitting_on : int (0, 1)
+            Flag to allow for cell splitting to happen at the mean of data
+            points when building the tree for faster estimates. Default to 0
+            - TODO currently not implemented.
+        
+        type_of_smoothing : int (0, 1, 2, 3, 4, 5)
+            Type of smoothing used:
+                0) None
+                1) FiEstAS
+                2) Normal isotropic spherical kernel
+                3) Adaptive metric spherical kernel
+                4) Normal isotropic product form kernel
+                5) Adaptive metric product form kernel
+            Default to 3.
+        
+        vol_corr : int (0, 1)
+            Flag to enable a correction that avoid underestimating density
+            when the smoothing box extends outside the boundary. Default to 1.
+        
+        type_of_kernel : int (0, 1, 2, 3, 4, 5)
+            Type of the kernel profile used:
+                0: B-spline
+                1: Top hat
+                2: Bi-weight (1-x^2)^2
+                3: Epanechikov
+                4: Cloud in cell
+                5: Triangular shaped cloud
+            Default to 3.
+        
+        kernel_bias_correction : int (0, 1)
+            Flag to enable corrections that displace central data points when
+            computing densities, and reduce bias caused by irregularly
+            distributed data. Default to 1.
+        
+        anisotropy_kernel : int (0, 1)
+            Flag to enable the use of anisotropic kernels which can have both
+            shear and rotation. Kerels become then rotated ellipsoids in the
+            density computation. With it on, type_of_smoothing should be either
+            2 or 3. Default to 0.
+        
+        anisotropy : float
+            Minimum allowable minor to major axis ratio of the kernel smoothing
+            lengths for computational management. Default to 0.
+        
+        ngb_a : int
+            Number of neighbouring particles EnBiD should consider when
+            computing the anisotropic kernel. Default to ngb.
+        
+        type_list_on : int (0, 1)
+            Flag to extend the number of particle types on which EnBiD can
+            run independent density estimations from the default 6 types of
+            GADGET formated data. Default to 0 - TODO currently not
+            implemented.
+        
+        periodic_boundary_on : int (0, 1)
+            Flag to allow periodic boundary conditions. Default to 0 - TODO
+            currently not implemented.
         
         Returns
         ----------
@@ -108,9 +192,11 @@ def run_enbid(name=None, ngb=64, type_of_kernel=3):
     """
     path = make_path_of_name(name)
     with open(path / ENBID_PARAMFILE, 'w') as f:
-        f.write(ENBID_PARAMFILE_TEMPLATE.substitute(fname=TO_ENBID_FILENAME, ngb=ngb, type_of_kernel=type_of_kernel))
+        f.write(ENBID_PARAMFILE_TEMPLATE.substitute(DEFAULT_FOR_PARAMFILE, des_num_ngb=ngb, des_num_ngb_a=kwargs.pop('ngb_a', ngb), **kwargs))
     subprocess.call([ENBID, ENBID_PARAMFILE], cwd=path)
     return path
+
+run_enbid.__doc__ = run_enbid.__doc__.format(DEFAULT_NGB=DEFAULT_NGB)
 
 
 def return_enbid(name=None):
@@ -156,10 +242,10 @@ def enbid(*args, **kwargs):
         name : string
             Name of folder where to save the input/output files for the EnBiD
             estimator. Default to None.
-
-        ngb : int
-            Number of neighbouring particles EnBiD should consider in the
-            kernel density estimation. Default to 64.
+        
+        **kwargs : dict
+            Refer to function run_enbid documentation for additional keyword
+            arguments.
         
         Returns
         ----------
@@ -167,9 +253,8 @@ def enbid(*args, **kwargs):
             Array representing kernel density estimates for the input particles
     """
     points = args[0]
-    name = kwargs.get('name', None)
-    ngb = kwargs.get('ngb', 64)
-    return return_enbid(run_enbid(write_for_enbid(points, name=name), ngb=ngb))
+    name = kwargs.pop('name', None)
+    return return_enbid(run_enbid(write_for_enbid(points, name=name), **kwargs))
 
 
 if __name__ == '__main__':
