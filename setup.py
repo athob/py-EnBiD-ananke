@@ -83,7 +83,7 @@ setup(name=NAME,
           "Topic :: Scientific/Engineering :: Astronomy",
           "Topic :: Software Development :: Version Control :: Git"
       ],
-      python_requires='>=3.7.12',
+      python_requires='>=3.7.12,,<3.12',
       packages=[NAME],
       package_dir={'': SRC_DIR},
       package_data=package_data,
