@@ -89,7 +89,7 @@ def run_enbid(name=None, ngb=DEFAULT_NGB, **kwargs):
 
         Call signature::
 
-            path = run_enbid(name=None, ngb=64)
+            path = run_enbid(name=None, ngb=64, **kwargs)
         
         Parameters
         ----------
@@ -231,7 +231,7 @@ def enbid(*args, **kwargs):
 
         Call signature::
 
-            rho = enbid(points, name=None, ngb=64)
+            rho = enbid(points, name=None, **kwargs)
         
         Parameters
         ----------
