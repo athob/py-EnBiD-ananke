@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """
-Contains the EnBiD module building utility tools.
+Contains the EnBiD module building utility tools. Credit to
+https://github.com/GalacticDynamics-Oxford/Agama/blob/master/setup.py.
 """
 import pathlib
 import shutil

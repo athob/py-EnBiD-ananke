@@ -192,7 +192,9 @@ def run_enbid(name=None, ngb=DEFAULT_NGB, **kwargs):
     """
     path = make_path_of_name(name)
     with open(path / ENBID_PARAMFILE, 'w') as f:
-        f.write(ENBID_PARAMFILE_TEMPLATE.substitute(DEFAULT_FOR_PARAMFILE, des_num_ngb=ngb, des_num_ngb_a=kwargs.pop('ngb_a', ngb), **kwargs))
+        kwargs[TTAGS.des_num_ngb] = ngb
+        kwargs[TTAGS.des_num_ngb_a] = kwargs.pop('ngb_a', ngb)
+        f.write(ENBID_PARAMFILE_TEMPLATE.substitute(DEFAULT_FOR_PARAMFILE, **kwargs))
     subprocess.call([ENBID, ENBID_PARAMFILE], cwd=path)
     return path
 
