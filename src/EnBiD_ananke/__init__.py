@@ -79,7 +79,8 @@ def write_for_enbid(points, name=None):
     temp = np.max(np.abs(np.average(points, axis=0)/np.std(points, axis=0)))
     if temp>1: warnings.warn("Input points may be not centered, which may cause EnBiD to run into a SegmentationFault")
     path = make_path_of_name(name)
-    np.savetxt(path / TO_ENBID_FILENAME, points, delimiter=' ')
+    np.savetxt(path / TO_ENBID_FILENAME, points-np.average(points, axis=0), delimiter=' ')  # TODO quick fix, consider doing it differently
+    # np.savetxt(path / TO_ENBID_FILENAME, points, delimiter=' ')
     return path
 
 
