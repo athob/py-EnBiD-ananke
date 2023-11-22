@@ -193,11 +193,11 @@ def run_enbid(name=None, ngb=DEFAULT_NGB, verbose=True, **kwargs):
             Path of folder where EnBiD output files are located.
     """
     path = make_path_of_name(name)
-    with open(path / ENBID_PARAMFILE, 'w') as f:
+    with open(path / CONSTANTS.enbid_paramfile, 'w') as f:
         kwargs[TTAGS.des_num_ngb] = ngb
         kwargs[TTAGS.des_num_ngb_a] = kwargs.pop('ngb_a', ngb)
         f.write(ENBID_PARAMFILE_TEMPLATE.substitute(DEFAULT_FOR_PARAMFILE, **kwargs))
-    execute([CONSTANTS.enbid, ENBID_PARAMFILE], verbose=verbose, cwd=path)
+    execute([CONSTANTS.enbid, CONSTANTS.enbid_paramfile], verbose=verbose, cwd=path)
     return path
 
 run_enbid.__doc__ = run_enbid.__doc__.format(DEFAULT_NGB=DEFAULT_NGB)
@@ -223,7 +223,7 @@ def return_enbid(name=None):
             Array representing the kernel density estimates output by EnBiD
     """
     path = make_path_of_name(name)
-    usedvals = pd.read_table(path / USEDVALUES, header=None, delim_whitespace=True,
+    usedvals = pd.read_table(path / CONSTANTS.usedvalues, header=None, delim_whitespace=True,
                              index_col=0).T.reset_index(drop=True).to_dict('records')[0]
     rho = np.loadtxt(path / '{}{}.{}'.format(TO_ENBID_FILENAME, usedvals[SNAPSHOT_FILEBASE], ENBID_OUT_EXT))
     return rho

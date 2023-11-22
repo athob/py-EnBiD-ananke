@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 from .utils import Singleton
 
-__all__ = ['NAME', 'LOG_DIR', 'SRC_DIR', 'ENBID2', 'ENBID_URL', 'CONSTANTS', 'TO_ENBID_FILENAME', 'ENBID_PARAMFILE', 'USEDVALUES', 'SNAPSHOT_FILEBASE', 'ENBID_OUT_EXT', 'DEFAULT_NGB', 'TTAGS', 'ENBID_PARAMFILE_TEMPLATE', 'DEFAULT_FOR_PARAMFILE']
+__all__ = ['NAME', 'LOG_DIR', 'SRC_DIR', 'ENBID2', 'ENBID_URL', 'CONSTANTS', 'TO_ENBID_FILENAME', 'SNAPSHOT_FILEBASE', 'ENBID_OUT_EXT', 'DEFAULT_NGB', 'TTAGS', 'ENBID_PARAMFILE_TEMPLATE', 'DEFAULT_FOR_PARAMFILE']
 
 NAME = 'EnBiD_ananke'
 ENBID2 = 'Enbid-2.0'
@@ -106,8 +106,11 @@ ENBID_CPP = pathlib.Path(__file__).resolve().parent / ENBID2
 
 @dataclass()#frozen=True)
 class Constants(metaclass=Singleton):
-    enbid: pathlib.Path = ENBID_CPP / ENBID_EXEC
+    enbid: pathlib.Path  = ENBID_CPP / ENBID_EXEC
+    enbid_paramfile: str = ENBID_PARAMFILE
+
+    @property
+    def usedvalues(self):
+        return f"{self.enbid_paramfile}{USEDVALUES_SUFFIX}"
 
 CONSTANTS = Constants()
-
-USEDVALUES = f"{ENBID_PARAMFILE}{USEDVALUES_SUFFIX}"
