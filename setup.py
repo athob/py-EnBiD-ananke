@@ -6,19 +6,19 @@ from distutils.cmd import Command
 from distutils.core import setup
 
 from src._build_utils import *
-from src.constants import NAME, LOG_DIR, SRC_DIR, ENBID2
+from src.constants import NAME, LOG_DIR, SRC_DIR, CONSTANTS
 from src.__metadata__ import *
 
 ROOT_DIR = pathlib.Path(__file__).parent
 
-for_all_files = (ENBID2,)
+for_all_files = (CONSTANTS.enbid2,)
 
 (ROOT_DIR / LOG_DIR).mkdir(parents=True, exist_ok=True)
 
 long_description = ""
 
 ########## This can't be in MyBuildExt ##########
-enbid_dir = ROOT_DIR / SRC_DIR / NAME / ENBID2
+enbid_dir = ROOT_DIR / SRC_DIR / NAME / CONSTANTS.enbid2
 download_enbid(enbid_dir)
 compile_enbid(enbid_dir)
 ############## Because of that bit ##############
@@ -40,7 +40,7 @@ class MyBuildExt(build_ext):
         enbid_exists = False  # TODO
         if not enbid_exists:
             ########## This can't be in MyBuildExt ##########
-            # enbid_dir = ROOT_DIR / SRC_DIR / NAME / ENBID2
+            # enbid_dir = ROOT_DIR / SRC_DIR / NAME / CONSTANTS.enbid2
             # download_enbid(enbid_dir)
             # compile_enbid(enbid_dir)
             #################################################

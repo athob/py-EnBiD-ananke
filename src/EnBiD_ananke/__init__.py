@@ -225,7 +225,7 @@ def return_enbid(name=None):
     path = make_path_of_name(name)
     usedvals = pd.read_table(path / CONSTANTS.usedvalues, header=None, delim_whitespace=True,
                              index_col=0).T.reset_index(drop=True).to_dict('records')[0]
-    rho = np.loadtxt(path / '{}{}.{}'.format(TO_ENBID_FILENAME, usedvals[SNAPSHOT_FILEBASE], ENBID_OUT_EXT))
+    rho = np.loadtxt(path / f"{TO_ENBID_FILENAME}{usedvals[SNAPSHOT_FILEBASE]}.{ENBID_OUT_EXT}")
     return rho
 
 

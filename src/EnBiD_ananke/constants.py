@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 from .utils import Singleton
 
-__all__ = ['NAME', 'LOG_DIR', 'SRC_DIR', 'ENBID2', 'ENBID_URL', 'CONSTANTS', 'TO_ENBID_FILENAME', 'SNAPSHOT_FILEBASE', 'ENBID_OUT_EXT', 'DEFAULT_NGB', 'TTAGS', 'ENBID_PARAMFILE_TEMPLATE', 'DEFAULT_FOR_PARAMFILE']
+__all__ = ['NAME', 'LOG_DIR', 'SRC_DIR', 'ENBID_URL', 'CONSTANTS', 'TO_ENBID_FILENAME', 'SNAPSHOT_FILEBASE', 'ENBID_OUT_EXT', 'DEFAULT_NGB', 'TTAGS', 'ENBID_PARAMFILE_TEMPLATE', 'DEFAULT_FOR_PARAMFILE']
 
 NAME = 'EnBiD_ananke'
 ENBID2 = 'Enbid-2.0'
@@ -26,7 +26,7 @@ ENBID_OUT_EXT = 'est'
 DEFAULT_NGB = 64
 
 @dataclass(frozen=True)
-class Constants(metaclass=Singleton):
+class TemplateTags(metaclass=Singleton):
     fname: str                    = 'fname'
     des_num_ngb: str              = 'des_num_ngb'
     spatial_scale: str            = 'spatial_scale'
@@ -44,7 +44,7 @@ class Constants(metaclass=Singleton):
     type_list_on: str             = 'type_list_on'
     periodic_boundary_on: str     = 'periodic_boundary_on'
 
-TTAGS = Constants()
+TTAGS = TemplateTags()
 
 ENBID_PARAMFILE_TEMPLATE = Template(f"""%  Input and Output
 InitCondFile     ${{{TTAGS.fname}}}
@@ -99,18 +99,32 @@ DEFAULT_FOR_PARAMFILE = {
     TTAGS.periodic_boundary_on: 0
 }
 
-
-TEMP_DIR = tempfile.TemporaryDirectory()
-
-ENBID_CPP = pathlib.Path(__file__).resolve().parent / ENBID2
-
-@dataclass()#frozen=True)
+@dataclass()
 class Constants(metaclass=Singleton):
-    enbid: pathlib.Path  = ENBID_CPP / ENBID_EXEC
+    enbid2: str          = ENBID2
+    enbid_exec: str      = ENBID_EXEC
+    _enbid: pathlib.Path = None
     enbid_paramfile: str = ENBID_PARAMFILE
+
+    @property
+    def enbid_cpp(self):
+        return pathlib.Path(__file__).resolve().parent / self.enbid2
+    
+    @property
+    def enbid(self):
+        if isinstance(self._enbid, pathlib.Path):
+            return self._enbid
+        else:
+            return self.enbid_cpp / self.enbid_exec
+    
+    @enbid.setter
+    def enbid(self, path: pathlib.Path):
+        self._enbid = path
 
     @property
     def usedvalues(self):
         return f"{self.enbid_paramfile}{USEDVALUES_SUFFIX}"
 
 CONSTANTS = Constants()
+
+TEMP_DIR = tempfile.TemporaryDirectory()
