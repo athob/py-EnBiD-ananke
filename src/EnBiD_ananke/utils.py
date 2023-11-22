@@ -19,21 +19,24 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-def _execute_generator(cmd, **kwargs):
-    popen = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, **kwargs)
+def _execute_generator(args, **kwargs):
+    popen = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, **kwargs)
     for stdout_line in iter(popen.stdout.readline, ""):
         yield stdout_line 
     popen.stdout.close()
     return_code = popen.wait()
     if return_code:
-        raise subprocess.CalledProcessError(return_code, cmd)
+        raise subprocess.CalledProcessError(return_code, args)
 
 
-def execute(cmd, verbose=True, **kwargs):
+def execute(args, verbose=True, **kwargs):
     """
+    Run the command described by args, and use
+    verbose kwarg to redirect output/error stream
+    to python output stream.
     Credit https://stackoverflow.com/a/4417735
     """
-    for path in _execute_generator(cmd, **kwargs):
+    for path in _execute_generator(args, **kwargs):
         print(path, end="") if verbose else None
 
 
