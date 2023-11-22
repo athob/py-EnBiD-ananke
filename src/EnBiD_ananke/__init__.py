@@ -20,6 +20,7 @@ import pandas as pd
 
 from .__metadata__ import *
 from .constants import *
+from .utils import execute
 
 __all__ = ['enbid']
 
@@ -84,7 +85,7 @@ def write_for_enbid(points, name=None):
     return path
 
 
-def run_enbid(name=None, ngb=DEFAULT_NGB, **kwargs):
+def run_enbid(name=None, ngb=DEFAULT_NGB, verbose=True, **kwargs):
     """
         Run EnBiD using input files in name.
 
@@ -196,7 +197,7 @@ def run_enbid(name=None, ngb=DEFAULT_NGB, **kwargs):
         kwargs[TTAGS.des_num_ngb] = ngb
         kwargs[TTAGS.des_num_ngb_a] = kwargs.pop('ngb_a', ngb)
         f.write(ENBID_PARAMFILE_TEMPLATE.substitute(DEFAULT_FOR_PARAMFILE, **kwargs))
-    subprocess.call([ENBID, ENBID_PARAMFILE], cwd=path)
+    execute([CONSTANTS.enbid, ENBID_PARAMFILE], verbose=verbose, cwd=path)
     return path
 
 run_enbid.__doc__ = run_enbid.__doc__.format(DEFAULT_NGB=DEFAULT_NGB)
