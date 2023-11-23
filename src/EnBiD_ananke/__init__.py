@@ -13,7 +13,6 @@ EnBiD comes with the function enbid, please refer to its documentation
 for further help.
 """
 import pathlib
-import subprocess
 import warnings
 import numpy as np
 import pandas as pd
