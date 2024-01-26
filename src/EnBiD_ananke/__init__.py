@@ -16,6 +16,7 @@ import pathlib
 import warnings
 import numpy as np
 import pandas as pd
+from sklearn import neighbors as nghb
 
 from .__metadata__ import *
 from .constants import *
@@ -76,11 +77,20 @@ def write_for_enbid(points, name=None):
     """
     points = np.asarray(points)
     assert points.ndim == 2 and points.shape[-1] == 3, 'Array-like input must be of shape (X, 3)'
-    temp = np.max(np.abs(np.average(points, axis=0)/np.std(points, axis=0)))
-    if temp>1: warnings.warn("Input points may be not centered, which may cause EnBiD to run into a SegmentationFault")
+    # depreciating that warning
+    # temp = np.max(np.abs(np.average(points, axis=0)/np.std(points, axis=0)))
+    # if temp>1: warnings.warn("Input points may be not centered, which may cause EnBiD to run into a SegmentationFault")
+    # center frame on most clustered structure using NN distances
+    NN = nghb.NearestNeighbors(n_neighbors=2)
+    NN.fit(points)
+    NN_distances = NN.kneighbors(points)[0][:,1]
+    most_clustered_structure = points[NN_distances < np.median(NN_distances)]
+    most_clustered_structure_center = np.average(most_clustered_structure, axis=0)
+    #
     path = make_path_of_name(name)
-    np.savetxt(path / TO_ENBID_FILENAME, points-np.average(points, axis=0), delimiter=' ')  # TODO quick fix, consider doing it differently
     # np.savetxt(path / TO_ENBID_FILENAME, points, delimiter=' ')
+    # np.savetxt(path / TO_ENBID_FILENAME, points-np.average(points, axis=0), delimiter=' ')
+    np.savetxt(path / TO_ENBID_FILENAME, points - most_clustered_structure_center, delimiter=' ')
     return path
 
 

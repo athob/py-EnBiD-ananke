@@ -85,7 +85,7 @@ setup(name=NAME,
       package_dir={'': SRC_DIR},
       package_data=package_data,
       include_package_data=True,
-      install_requires=['numpy', 'pandas'],
+      install_requires=['numpy', 'pandas', 'scikit-learn'],
       ext_modules=[distutils.extension.Extension('', [])],
       cmdclass={'build_ext': MyBuildExt, 'test': MyTest},
       )
