@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 import pathlib
-import distutils
-from distutils.command.build_ext import build_ext
-from distutils.cmd import Command
-from distutils.core import setup
+import setuptools
+from setuptools.command.build_ext import build_ext
+from setuptools import setup, Command
 
 from src._build_utils import *
 from src.constants import NAME, LOG_DIR, SRC_DIR, CONSTANTS
@@ -86,6 +85,6 @@ setup(name=NAME,
       package_data=package_data,
       include_package_data=True,
       install_requires=['numpy>=1.22,<2', 'pandas>=2,<3', 'scikit-learn>=1.1,<2'],
-      ext_modules=[distutils.extension.Extension('', [])],
+      ext_modules=[setuptools.extension.Extension('', [])],
       cmdclass={'build_ext': MyBuildExt, 'test': MyTest},
       )
