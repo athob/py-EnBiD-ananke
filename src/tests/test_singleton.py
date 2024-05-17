@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from ..EnBiD_ananke.utils import Singleton
+from ..EnBiD_ananke._builtin_utils import Singleton
 
 
 def test_singleton():

@@ -7,7 +7,7 @@ import tempfile
 from string import Template
 from dataclasses import dataclass
 
-from .utils import Singleton
+from ._builtin_utils import Singleton
 
 __all__ = ['NAME', 'LOG_DIR', 'SRC_DIR', 'ENBID_URL', 'CONSTANTS', 'TO_ENBID_FILENAME', 'SNAPSHOT_FILEBASE', 'ENBID_OUT_EXT', 'DEFAULT_NGB', 'TTAGS', 'ENBID_PARAMFILE_TEMPLATE', 'DEFAULT_FOR_PARAMFILE']
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import random
 
-from ..EnBiD_ananke.utils import execute
+from ..EnBiD_ananke._builtin_utils import execute
 from .utils import list_stdout
 
 

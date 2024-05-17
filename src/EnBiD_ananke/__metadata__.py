@@ -25,8 +25,8 @@ __license_classifier__ = "License :: OSI Approved :: GNU General Public License 
 __license_short__ = "Licensed under the GNU GPL v2 or later"
 
 # SOFTWARE METADATA
-__version__ = "0.1.3b2.dev1"
-__date__: date = date(2024, 4, 16)  # TODO how to automatize based on commit day?
+__version__ = "0.1.3b2.dev2"
+__date__: date = date(2024, 5, 17)  # TODO how to automatize based on commit day?
 __maintainer__ = "Adrien Thob"
 __email__ = "athob@sas.upenn.edu"
 __status_classifier__ = "Development Status :: 4 - Beta"
