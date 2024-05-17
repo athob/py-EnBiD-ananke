@@ -10,7 +10,7 @@ from src.__metadata__ import *
 
 ROOT_DIR = pathlib.Path(__file__).parent
 
-for_all_files = (CONSTANTS.enbid2,)
+for_all_files = (CONSTANTS.enbid2, '__license__')
 
 (ROOT_DIR / LOG_DIR).mkdir(parents=True, exist_ok=True)
 
