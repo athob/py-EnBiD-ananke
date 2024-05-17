@@ -88,9 +88,9 @@ def write_for_enbid(points, name=None):
     most_clustered_structure_center = np.average(most_clustered_structure, axis=0)
     #
     path = make_path_of_name(name)
-    # np.savetxt(path / TO_ENBID_FILENAME, points, delimiter=' ')
-    # np.savetxt(path / TO_ENBID_FILENAME, points-np.average(points, axis=0), delimiter=' ')
-    np.savetxt(path / TO_ENBID_FILENAME, points - most_clustered_structure_center, delimiter=' ')
+    # np.savetxt(path / DEFAULT_FOR_PARAMFILE[TTAGS.fname], points, delimiter=' ')
+    # np.savetxt(path / DEFAULT_FOR_PARAMFILE[TTAGS.fname], points-np.average(points, axis=0), delimiter=' ')
+    np.savetxt(path / DEFAULT_FOR_PARAMFILE[TTAGS.fname], points - most_clustered_structure_center, delimiter=' ')
     return path
 
 
@@ -234,7 +234,7 @@ def return_enbid(name=None):
     path = make_path_of_name(name)
     usedvals = pd.read_table(path / CONSTANTS.usedvalues, header=None, delim_whitespace=True,
                              index_col=0).T.reset_index(drop=True).to_dict('records')[0]
-    rho = np.loadtxt(path / f"{TO_ENBID_FILENAME}{usedvals[SNAPSHOT_FILEBASE]}.{ENBID_OUT_EXT}")
+    rho = np.loadtxt(path / f"{DEFAULT_FOR_PARAMFILE[TTAGS.fname]}{usedvals[SNAPSHOT_FILEBASE]}.{ENBID_OUT_EXT}")
     return rho
 
 

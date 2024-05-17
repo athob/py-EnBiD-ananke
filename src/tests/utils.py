@@ -8,7 +8,7 @@ import stat
 import contextlib
 import functools
 
-from ..EnBiD_ananke import CONSTANTS, TO_ENBID_FILENAME, ENBID_OUT_EXT
+from ..EnBiD_ananke import CONSTANTS, DEFAULT_FOR_PARAMFILE, TTAGS, ENBID_OUT_EXT
 
 n_sample = 100
 
@@ -25,7 +25,7 @@ def simulate_enbid_output(name, tag='_d3n64', values=[]):
     path = pathlib.Path(name)
     path.mkdir()
     (path / CONSTANTS.usedvalues).write_text(f"SnapshotFileBase                   {tag}")
-    (path / f"{TO_ENBID_FILENAME}{tag}.{ENBID_OUT_EXT}").write_text("\n".join(map(str,values)))
+    (path / f"{DEFAULT_FOR_PARAMFILE[TTAGS.fname]}{tag}.{ENBID_OUT_EXT}").write_text("\n".join(map(str,values)))
 
 @contextlib.contextmanager
 def tmp_wd():

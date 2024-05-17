@@ -18,12 +18,41 @@ ENBID_EXEC = 'Enbid'
 LOG_DIR = 'log'
 SRC_DIR = 'src'
 
-TO_ENBID_FILENAME = 'to_enbid'
 ENBID_PARAMFILE = 'enbid_paramfile'
 USEDVALUES_SUFFIX = '_enbid-usedvalues'
 SNAPSHOT_FILEBASE = 'SnapshotFileBase'
 ENBID_OUT_EXT = 'est'
+
+TO_ENBID_FILENAME = 'to_enbid'
 DEFAULT_NGB = 64
+
+@dataclass()
+class Constants(metaclass=Singleton):
+    enbid2: str          = ENBID2
+    enbid_exec: str      = ENBID_EXEC
+    _enbid: pathlib.Path = None
+    enbid_paramfile: str = ENBID_PARAMFILE
+
+    @property
+    def enbid_cpp(self):
+        return pathlib.Path(__file__).resolve().parent / self.enbid2
+    
+    @property
+    def enbid(self):
+        if isinstance(self._enbid, pathlib.Path):
+            return self._enbid
+        else:
+            return self.enbid_cpp / self.enbid_exec
+    
+    @enbid.setter
+    def enbid(self, path: pathlib.Path):
+        self._enbid = path
+
+    @property
+    def usedvalues(self):
+        return f"{self.enbid_paramfile}{USEDVALUES_SUFFIX}"
+
+CONSTANTS = Constants()
 
 @dataclass(frozen=True)
 class TemplateTags(metaclass=Singleton):
@@ -98,33 +127,5 @@ DEFAULT_FOR_PARAMFILE = {
     TTAGS.type_list_on: 0,
     TTAGS.periodic_boundary_on: 0
 }
-
-@dataclass()
-class Constants(metaclass=Singleton):
-    enbid2: str          = ENBID2
-    enbid_exec: str      = ENBID_EXEC
-    _enbid: pathlib.Path = None
-    enbid_paramfile: str = ENBID_PARAMFILE
-
-    @property
-    def enbid_cpp(self):
-        return pathlib.Path(__file__).resolve().parent / self.enbid2
-    
-    @property
-    def enbid(self):
-        if isinstance(self._enbid, pathlib.Path):
-            return self._enbid
-        else:
-            return self.enbid_cpp / self.enbid_exec
-    
-    @enbid.setter
-    def enbid(self, path: pathlib.Path):
-        self._enbid = path
-
-    @property
-    def usedvalues(self):
-        return f"{self.enbid_paramfile}{USEDVALUES_SUFFIX}"
-
-CONSTANTS = Constants()
 
 TEMP_DIR = tempfile.TemporaryDirectory()
