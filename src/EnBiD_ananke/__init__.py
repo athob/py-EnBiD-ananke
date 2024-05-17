@@ -20,6 +20,8 @@ from sklearn import neighbors as nghb
 
 from .__metadata__ import *
 from .constants import *
+from .templates import *
+from .defaults import *
 from .utils import execute
 
 __all__ = ['enbid']
