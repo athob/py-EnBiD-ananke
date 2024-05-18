@@ -16,6 +16,7 @@ from typing import Any, Optional, Union, Tuple, Dict
 from numpy.typing import ArrayLike, NDArray
 import pathlib
 import warnings
+import hashlib
 import numpy as np
 import pandas as pd
 from sklearn import neighbors as nghb
@@ -86,8 +87,14 @@ def write_for_enbid(points: ArrayLike, name : Optional[Union[str, pathlib.Path]]
     """
     path: pathlib.Path = __make_path_of_name(name)
     enbid_inputfile: pathlib.Path = path / DEFAULT_FOR_PARAMFILE[TTAGS.fname]
-    if not enbid_inputfile.exists() if caching else True:  # TODO save hashlib.sha256(points).hexdigest() to compare
-        points: NDArray = np.asarray(points)
+    enbid_inputhashfile: pathlib.Path = enbid_inputfile.with_suffix(f".{HASH_EXT}")
+    points: NDArray = np.asarray(points)
+    inputhash = bytes(hashlib.sha256(points).hexdigest(), HASH_ENCODING)
+    if ((enbid_inputhashfile.read_bytes() != inputhash # proceed if hashes don't match,
+         if (enbid_inputfile.exists() and              # only if enbid_inputfile exists,
+             enbid_inputhashfile.exists())             # and enbid_inputhashfile exists,
+         else True)                                    # otherwise proceed if both don't exist
+        if caching else True):                         # -> proceed anyway if caching is False
         assert points.ndim == 2 and points.shape[-1] == 3, 'Array-like input must be of shape (X, 3)'
         # depreciating that warning
         # temp = np.max(np.abs(np.average(points, axis=0)/np.std(points, axis=0)))
@@ -101,6 +108,7 @@ def write_for_enbid(points: ArrayLike, name : Optional[Union[str, pathlib.Path]]
         #
         coordinates: NDArray = points - most_clustered_structure_center
         np.savetxt(enbid_inputfile, coordinates, delimiter=' ')
+        enbid_inputhashfile.write_bytes(inputhash)
     return path
 
 
@@ -228,7 +236,7 @@ def run_enbid(name: Optional[Union[str, pathlib.Path]] = None, ngb: int = DEFAUL
     paramfile_text: str = ENBID_PARAMFILE_TEMPLATE.substitute(DEFAULT_FOR_PARAMFILE, **kwargs)
     paramfile: pathlib.Path = path / CONSTANTS.enbid_paramfile
     usedvalfile: pathlib.Path = path / CONSTANTS.usedvalues
-    if ((paramfile.read_text() != paramfile_text # proceed if paramfile_text is in paramfile,
+    if ((paramfile.read_text() != paramfile_text # proceed if paramfile_text is not in paramfile,
          if (paramfile.exists() and              # only if paramfile exist,
              usedvalfile.exists())               # and usedvalfile exists,
          else True)                              # otherwise proceed if both don't exist

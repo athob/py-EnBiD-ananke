@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 from ._builtin_utils import Singleton
 
-__all__ = ['NAME', 'LOG_DIR', 'SRC_DIR', 'ENBID_URL', 'CONSTANTS', 'SNAPSHOT_FILEBASE', 'ENBID_OUT_EXT']
+__all__ = ['NAME', 'LOG_DIR', 'SRC_DIR', 'ENBID_URL', 'CONSTANTS', 'SNAPSHOT_FILEBASE', 'ENBID_OUT_EXT', 'HASH_EXT', 'HASH_ENCODING']
 
 NAME = 'EnBiD_ananke'
 ENBID2 = 'Enbid-2.0'
@@ -20,6 +20,8 @@ ENBID_PARAMFILE = 'enbid_paramfile'
 USEDVALUES_SUFFIX = '_enbid-usedvalues'
 SNAPSHOT_FILEBASE = 'SnapshotFileBase'
 ENBID_OUT_EXT = 'est'
+HASH_EXT = 'hash'
+HASH_ENCODING = 'ascii'
 
 @dataclass()
 class Constants(metaclass=Singleton):
