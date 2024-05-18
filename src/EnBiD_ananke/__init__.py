@@ -12,6 +12,8 @@ How to use
 EnBiD comes with the function enbid, please refer to its documentation
 for further help.
 """
+from typing import Any, Optional, Union, Tuple, Dict
+from numpy.typing import ArrayLike, NDArray
 import pathlib
 import warnings
 import numpy as np
@@ -27,7 +29,7 @@ from .utils import execute
 __all__ = ['enbid']
 
 
-def make_path_of_name(name=None):
+def __make_path_of_name(name : Optional[Union[str, pathlib.Path]] = None) -> pathlib.Path:
     """
         Generate the folders structure representing a given name as a path,
         or generate a temporary one.
@@ -54,14 +56,15 @@ def make_path_of_name(name=None):
     return path
 
 
-def write_for_enbid(points, name=None):
+def write_for_enbid(points: ArrayLike, name : Optional[Union[str, pathlib.Path]] = None,
+                    caching : bool = False) -> pathlib.Path:
     """
         Writes the input files for EnBiD given the input particles 3D
         coordinates.
 
         Call signature::
 
-            path = write_for_enbid(points, name=None)
+            path = write_for_enbid(points, name=None, caching=False)
         
         Parameters
         ----------
@@ -72,37 +75,44 @@ def write_for_enbid(points, name=None):
         name : string
             Name of folder where to place EnBiD input files. Default to None.
         
+        caching : bool
+            If True, check if EnBiD input file already exists and ignore
+            writing if it does. Default to False.
+        
         Returns
         ----------
         path : pathlib.Path
             Path of folder where EnBiD input files are located.
     """
-    points = np.asarray(points)
-    assert points.ndim == 2 and points.shape[-1] == 3, 'Array-like input must be of shape (X, 3)'
-    # depreciating that warning
-    # temp = np.max(np.abs(np.average(points, axis=0)/np.std(points, axis=0)))
-    # if temp>1: warnings.warn("Input points may be not centered, which may cause EnBiD to run into a SegmentationFault")
-    # center frame on most clustered structure using NN distances
-    NN = nghb.NearestNeighbors(n_neighbors=2)
-    NN.fit(points)
-    NN_distances = NN.kneighbors(points)[0][:,1]
-    most_clustered_structure = points[NN_distances < np.median(NN_distances)]
-    most_clustered_structure_center = np.average(most_clustered_structure, axis=0)
-    #
-    path = make_path_of_name(name)
-    # np.savetxt(path / DEFAULT_FOR_PARAMFILE[TTAGS.fname], points, delimiter=' ')
-    # np.savetxt(path / DEFAULT_FOR_PARAMFILE[TTAGS.fname], points-np.average(points, axis=0), delimiter=' ')
-    np.savetxt(path / DEFAULT_FOR_PARAMFILE[TTAGS.fname], points - most_clustered_structure_center, delimiter=' ')
+    path: pathlib.Path = __make_path_of_name(name)
+    enbid_inputfile: pathlib.Path = path / DEFAULT_FOR_PARAMFILE[TTAGS.fname]
+    if not enbid_inputfile.exists() if caching else True:  # TODO save hashlib.sha256(points).hexdigest() to compare
+        points: NDArray = np.asarray(points)
+        assert points.ndim == 2 and points.shape[-1] == 3, 'Array-like input must be of shape (X, 3)'
+        # depreciating that warning
+        # temp = np.max(np.abs(np.average(points, axis=0)/np.std(points, axis=0)))
+        # if temp>1: warnings.warn("Input points may be not centered, which may cause EnBiD to run into a SegmentationFault")
+        # center frame on most clustered structure using NN distances
+        NN = nghb.NearestNeighbors(n_neighbors=2)
+        NN.fit(points)
+        NN_distances: NDArray = NN.kneighbors(points)[0][:,1]
+        most_clustered_structure: NDArray = points[NN_distances < np.median(NN_distances)]
+        most_clustered_structure_center: NDArray = np.average(most_clustered_structure, axis=0)
+        #
+        coordinates: NDArray = points - most_clustered_structure_center
+        np.savetxt(enbid_inputfile, coordinates, delimiter=' ')
     return path
 
 
-def run_enbid(name=None, ngb=DEFAULT_NGB, verbose=True, **kwargs):
+def run_enbid(name: Optional[Union[str, pathlib.Path]] = None, ngb: int = DEFAULT_NGB,
+              verbose: bool = True, caching: bool = False, **kwargs: Dict[str, Any]) -> pathlib.Path:
     """
         Run EnBiD using input files in name.
 
         Call signature::
 
-            path = run_enbid(name=None, ngb=64, **kwargs)
+            path = run_enbid(name=None, ngb=64, verbose=True,
+                             caching=False, **kwargs)
         
         Parameters
         ----------
@@ -114,6 +124,15 @@ def run_enbid(name=None, ngb=DEFAULT_NGB, verbose=True, **kwargs):
             Number of neighbouring particles EnBiD should consider in the
             smoothing for the density estimation. Default to {DEFAULT_NGB}.
 
+        verbose : bool
+            Verbose boolean flag to allow EnBiD to print what it's doing to
+            stdout. Default to True.
+
+        caching : bool
+            If True, check if EnBiD paramfile and usedvalues files already
+            exist, and ignore running if parameters from the previous run are
+            the same. Default to False.
+        
         spatial_scale : float
             Scaling between position and velocity space where the scaling goes
             as velocity = position/spatial_scale if spatial_scale is set
@@ -203,18 +222,25 @@ def run_enbid(name=None, ngb=DEFAULT_NGB, verbose=True, **kwargs):
         path : pathlib.Path
             Path of folder where EnBiD output files are located.
     """
-    path = make_path_of_name(name)
-    with open(path / CONSTANTS.enbid_paramfile, 'w') as f:
-        kwargs[TTAGS.des_num_ngb] = ngb
-        kwargs[TTAGS.des_num_ngb_a] = kwargs.pop('ngb_a', ngb)
-        f.write(ENBID_PARAMFILE_TEMPLATE.substitute(DEFAULT_FOR_PARAMFILE, **kwargs))
-    execute([CONSTANTS.enbid, CONSTANTS.enbid_paramfile], verbose=verbose, cwd=path)
+    path: pathlib.Path = __make_path_of_name(name)
+    kwargs[TTAGS.des_num_ngb] = ngb
+    kwargs[TTAGS.des_num_ngb_a] = kwargs.pop('ngb_a', ngb)
+    paramfile_text: str = ENBID_PARAMFILE_TEMPLATE.substitute(DEFAULT_FOR_PARAMFILE, **kwargs)
+    paramfile: pathlib.Path = path / CONSTANTS.enbid_paramfile
+    usedvalfile: pathlib.Path = path / CONSTANTS.usedvalues
+    if ((paramfile.read_text() != paramfile_text # proceed if paramfile_text is in paramfile,
+         if (paramfile.exists() and              # only if paramfile exist,
+             usedvalfile.exists())               # and usedvalfile exists,
+         else True)                              # otherwise proceed if both don't exist
+        if caching else True):                   # -> proceed anyway if caching is False
+        paramfile.write_text(paramfile_text)
+        execute([CONSTANTS.enbid, CONSTANTS.enbid_paramfile], verbose=verbose, cwd=path)
     return path
 
 run_enbid.__doc__ = run_enbid.__doc__.format(DEFAULT_NGB=DEFAULT_NGB)
 
 
-def return_enbid(name=None):
+def return_enbid(name: Optional[Union[str, pathlib.Path]] = None) -> NDArray:
     """
         Read EnBiD output file and returns the associated kernel density
         estimates after running the EnBiD estimator.
@@ -233,14 +259,14 @@ def return_enbid(name=None):
         rho : array_like
             Array representing the kernel density estimates output by EnBiD
     """
-    path = make_path_of_name(name)
+    path: pathlib.Path = __make_path_of_name(name)
     usedvals = pd.read_table(path / CONSTANTS.usedvalues, header=None, delim_whitespace=True,
                              index_col=0).T.reset_index(drop=True).to_dict('records')[0]
-    rho = np.loadtxt(path / f"{DEFAULT_FOR_PARAMFILE[TTAGS.fname]}{usedvals[SNAPSHOT_FILEBASE]}.{ENBID_OUT_EXT}")
+    rho: NDArray = np.loadtxt(path / f"{DEFAULT_FOR_PARAMFILE[TTAGS.fname]}{usedvals[SNAPSHOT_FILEBASE]}.{ENBID_OUT_EXT}")
     return rho
 
 
-def enbid(*args, **kwargs):
+def enbid(*args: Tuple[Any], **kwargs: Dict[str, Any]) -> NDArray:
     """
         Returns kernel density estimates given a set of particle 3D coordinates.
 
@@ -258,6 +284,13 @@ def enbid(*args, **kwargs):
             Name of folder where to save the input/output files for the EnBiD
             estimator. Default to None.
         
+        caching : bool
+            Only to be used with a given folder under argument name. If True,
+            check if EnBiD had already been used to produce the kernel density
+            estimates. If it hasn't, compute the estimates, otherwise, load
+            the existing data that had previously been cached. Default to
+            False.
+        
         **kwargs : dict
             Refer to function run_enbid documentation for additional keyword
             arguments.
@@ -269,7 +302,8 @@ def enbid(*args, **kwargs):
     """
     points = args[0]
     name = kwargs.pop('name', None)
-    return return_enbid(run_enbid(write_for_enbid(points, name=name), **kwargs))
+    caching = False if name is None else kwargs.pop('caching', False)
+    return return_enbid(run_enbid(write_for_enbid(points, name=name, caching=caching), caching=caching, **kwargs))
 
 
 if __name__ == '__main__':
