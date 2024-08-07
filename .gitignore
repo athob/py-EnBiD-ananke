@@ -70,9 +70,7 @@ instance/
 
 # Sphinx documentation
 docs/source/*
-!docs/source/*.ipynb
-!docs/source/*.rst
-!docs/source/*.py
+!docs/source/*.*
 !docs/source/_templates
 !docs/source/_static
 docs/_build/
