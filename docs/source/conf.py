@@ -6,6 +6,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath('../../src/EnBiD_ananke'))
 
 from src import __metadata__ as md
 
@@ -24,7 +25,6 @@ extensions = [
 	'sphinx.ext.duration',
 	'sphinx.ext.doctest',
 	'sphinx.ext.autodoc',
-	'sphinx.ext.autosummary',
 	'sphinx.ext.inheritance_diagram',
 	'sphinx.ext.napoleon',
 	'sphinx.ext.viewcode',
@@ -33,12 +33,38 @@ extensions = [
     'myst_nb',
 ]
 
-templates_path = ['_templates']
 exclude_patterns = ['.ipynb_checkpoints/*']
 
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'nature'
-html_static_path = ['_static']
+html_theme = 'furo'
+
+# -- Options for automatic API doc
+
+autodoc_default_options = {
+    'member-order': 'bysource',
+    'special-members': '__init__',
+    'ignore-module-all': True
+}
+
+def run_apidoc(_):
+    try:
+        from sphinx.ext.apidoc import main
+    except ImportError:
+        from sphinx.apidoc import main
+
+    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+    cur_dir = os.path.abspath(os.path.dirname(__file__))
+
+    api_doc_dir = os.path.join(cur_dir, "modules")
+    module = os.path.join(cur_dir, "../..", "src/EnBiD_ananke")
+    ignore = [
+    ]
+
+    main(["-M", "-f", "-e", "-T", "-d 0", "-o", api_doc_dir, module, *ignore])
+
+
+def setup(app):
+    app.connect("builder-inited", run_apidoc)
