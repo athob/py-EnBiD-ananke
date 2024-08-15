@@ -3,10 +3,11 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+package_name = 'EnBiD_ananke'
+
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
-sys.path.insert(0, os.path.abspath('../../src/EnBiD_ananke'))
 
 from src import __metadata__ as md
 
@@ -59,7 +60,7 @@ def run_apidoc(_):
     cur_dir = os.path.abspath(os.path.dirname(__file__))
 
     api_doc_dir = os.path.join(cur_dir, "modules")
-    module = os.path.join(cur_dir, "../..", "src/EnBiD_ananke")
+    module = os.path.join(cur_dir, "../..", f"src/{package_name}")
     ignore = [
     ]
 
