@@ -12,7 +12,7 @@ import subprocess
 import urllib.request
 from distutils.errors import CompileError
 
-from .constants import *
+from ._constants import *
 
 __all__ = ['say', 'all_files', 'download_enbid', 'compile_enbid']
 

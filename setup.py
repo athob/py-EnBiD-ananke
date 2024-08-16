@@ -5,7 +5,7 @@ from setuptools.command.build_ext import build_ext
 from setuptools import setup, Command
 
 from src._build_utils import *
-from src.constants import NAME, LOG_DIR, SRC_DIR, CONSTANTS
+from src._constants import NAME, LOG_DIR, SRC_DIR, CONSTANTS
 from src.__metadata__ import *
 
 ROOT_DIR = pathlib.Path(__file__).parent
