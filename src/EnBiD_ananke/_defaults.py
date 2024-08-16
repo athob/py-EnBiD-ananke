@@ -4,7 +4,7 @@ Contains the EnBiD module defaults.
 """
 import tempfile
 
-from .templates import *
+from ._templates import *
 
 __all__ = ['DEFAULT_NGB', 'DEFAULT_FOR_PARAMFILE']
 

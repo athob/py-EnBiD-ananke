@@ -19,9 +19,9 @@ import pandas as pd
 from sklearn import neighbors as nghb
 
 from .__metadata__ import *
-from .constants import *
-from .templates import *
-from .defaults import *
+from ._constants import *
+from ._templates import *
+from ._defaults import *
 from .utils import execute
 
 __all__ = ['enbid']
