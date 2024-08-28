@@ -1,4 +1,6 @@
 sphinx-math-dollar
 sphinx-copybutton
+myst-parser>=4
 myst-nb
-furo
+linkify-it-py
+pydata-sphinx-theme
