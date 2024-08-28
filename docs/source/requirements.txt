@@ -1,6 +1,6 @@
 sphinx-math-dollar
 sphinx-copybutton
-myst-parser>=4
+myst-parser>=3
 myst-nb
 linkify-it-py
 pydata-sphinx-theme
