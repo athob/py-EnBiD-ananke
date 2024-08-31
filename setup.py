@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 import pathlib
 import setuptools
-from setuptools.command.build_ext import build_ext
-from setuptools import setup, Command
+from setuptools import setup
 
 from src._build_utils import *
 from src._constants import NAME, LOG_DIR, SRC_DIR, CONSTANTS
@@ -24,43 +23,6 @@ compile_enbid(enbid_dir)
 package_data = {NAME: all_files(*for_all_files,
                                 basedir=pathlib.Path(SRC_DIR, NAME))}
 #################################################
-
-def make_cmdclass():
-    """
-    """
-    # Custom build step that manually creates the makefile and then calls 'make' to create the shared library
-    class _build_ext(build_ext):
-        def run(self):
-            build_ext.run(self)
-            # try:
-            #     say("\nTesting if Enbid is available...")
-            #     enbid_exists = bool(subprocess.call('Enbid'))
-            #     say("Done\n")
-            # except (PermissionError, OSError):
-            #     say("Absent\n")
-            #     enbid_exists = False
-            enbid_exists = False  # TODO
-            if not enbid_exists:
-                ########## This can't be in MyBuildExt ##########
-                # enbid_dir = ROOT_DIR / SRC_DIR / NAME / CONSTANTS.enbid2
-                # download_enbid(enbid_dir)
-                # compile_enbid(enbid_dir)
-                #################################################
-                pass
-
-    # TODO
-    class _test(Command):
-        description = 'run tests'
-        user_options = []
-
-        def initialize_options(self): pass
-
-        def finalize_options(self): pass
-
-        def run(self): pass
-    
-    return {'build_ext': _build_ext, 'test': _test}
-
 
 setup(name=NAME,
       version=__version__,

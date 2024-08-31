@@ -11,10 +11,12 @@ import fileinput
 import subprocess
 import urllib.request
 from distutils.errors import CompileError
+from setuptools.command.build_ext import build_ext
+from setuptools import Command
 
 from ._constants import *
 
-__all__ = ['say', 'all_files', 'download_enbid', 'compile_enbid']
+__all__ = ['say', 'all_files', 'download_enbid', 'compile_enbid', 'make_cmdclass']
 
 ROOT_DIR = pathlib.Path(__file__).parent.parent
 
@@ -89,3 +91,40 @@ def compile_enbid(enbid_dir):
     say("\n\tRunning make")
     make_enbid(enbid_dir)
     say("\n")
+
+
+def make_cmdclass():
+    """
+    """
+    # Custom build step that manually creates the makefile and then calls 'make' to create the shared library
+    class _build_ext(build_ext):
+        def run(self):
+            build_ext.run(self)
+            # try:
+            #     say("\nTesting if Enbid is available...")
+            #     enbid_exists = bool(subprocess.call('Enbid'))
+            #     say("Done\n")
+            # except (PermissionError, OSError):
+            #     say("Absent\n")
+            #     enbid_exists = False
+            enbid_exists = False  # TODO
+            if not enbid_exists:
+                ########## This can't be in MyBuildExt ##########
+                # enbid_dir = ROOT_DIR / SRC_DIR / NAME / CONSTANTS.enbid2
+                # download_enbid(enbid_dir)
+                # compile_enbid(enbid_dir)
+                #################################################
+                pass
+
+    # TODO
+    class _test(Command):
+        description = 'run tests'
+        user_options = []
+
+        def initialize_options(self): pass
+
+        def finalize_options(self): pass
+
+        def run(self): pass
+    
+    return {'build_ext': _build_ext, 'test': _test}
