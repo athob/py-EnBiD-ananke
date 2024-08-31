@@ -16,7 +16,7 @@ from setuptools import Command
 
 from ._constants import *
 
-__all__ = ['say', 'all_files', 'download_enbid', 'compile_enbid', 'make_cmdclass']
+__all__ = ['make_package_data', 'make_cmdclass']
 
 ROOT_DIR = pathlib.Path(__file__).parent.parent
 
@@ -91,6 +91,22 @@ def compile_enbid(enbid_dir):
     say("\n\tRunning make")
     make_enbid(enbid_dir)
     say("\n")
+
+
+def download_and_compile_enbid():
+    enbid_dir = ROOT_DIR / SRC_DIR / NAME / CONSTANTS.enbid2
+    download_enbid(enbid_dir)
+    compile_enbid(enbid_dir)
+
+
+def make_package_data():
+    for_all_files = (CONSTANTS.enbid2, '__license__')
+    ########## This can't be in MyBuildExt ##########
+    download_and_compile_enbid()
+    ############## Because of that bit ##############
+    return {NAME: all_files(*for_all_files,
+                                    basedir=pathlib.Path(SRC_DIR, NAME))}
+
 
 
 def make_cmdclass():
