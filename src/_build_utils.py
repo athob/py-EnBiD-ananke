@@ -15,6 +15,7 @@ from setuptools.command.build_ext import build_ext
 from setuptools import Command
 
 from ._constants import *
+from . import versioneer
 
 __all__ = ['make_package_data', 'make_cmdclass']
 
@@ -143,4 +144,4 @@ def make_cmdclass():
 
         def run(self): pass
     
-    return {'build_ext': _build_ext, 'test': _test}
+    return versioneer.get_cmdclass({'build_ext': _build_ext, 'test': _test})
