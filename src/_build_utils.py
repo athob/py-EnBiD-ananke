@@ -13,13 +13,17 @@ import urllib.request
 from distutils.errors import CompileError
 from setuptools.command.build_ext import build_ext
 from setuptools import Command
+from packaging.version import Version
 
+from ._builtin_utils import get_version_of_command
 from ._constants import *
 from . import versioneer
 
 __all__ = ['make_package_data', 'make_cmdclass']
 
 ROOT_DIR = pathlib.Path(__file__).parent.parent
+MIN_GPP_VERSION = Version("8.5")  # TODO can probably test with a lesser version
+MIN_MAKE_VERSION = Version("3.82")
 
 
 # force printing to the terminal even if stdout was redirected
@@ -46,6 +50,25 @@ def all_files(*paths, basedir='.'):
             for path in paths
             for dirpath, dirnames, files in pathlib.os.walk(basedir / path)
             for f in files]
+
+
+def verify_system_dependencies():
+    try:
+        tar_version = Version(get_version_of_command("tar"))
+    except FileNotFoundError:
+        raise OSError("Your system does not have tar installed. Please install tar before proceeding")
+    try:
+        make_version = Version(get_version_of_command("make"))
+    except FileNotFoundError:
+        raise OSError("Your system does not have the utility gnumake installed. Please install one before proceeding")
+    if make_version < MIN_MAKE_VERSION:
+        raise OSError(f"Your system has gnumake v{make_version} installed, but Galaxia_ananke requires v{MIN_MAKE_VERSION}")
+    try:
+        gpp_version = Version(get_version_of_command("g++"))
+    except FileNotFoundError:
+        raise OSError("Your system does not have a C++ compiler installed. Please install one before proceeding")
+    if gpp_version < MIN_GPP_VERSION:
+        raise OSError(f"Your system has g++ v{gpp_version} installed, but Galaxia_ananke requires v{MIN_GPP_VERSION}")
 
 
 def download_enbid(enbid_dir):
@@ -103,6 +126,7 @@ def download_and_compile_enbid():
 def make_package_data():
     for_all_files = (CONSTANTS.enbid2, '__license__')
     ########## This can't be in MyBuildExt ##########
+    verify_system_dependencies()
     download_and_compile_enbid()
     ############## Because of that bit ##############
     return {NAME: all_files(*for_all_files,
