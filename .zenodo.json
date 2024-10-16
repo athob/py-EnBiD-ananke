@@ -1,0 +1,20 @@
+{
+    "title": "py-EnBiD-ananke: a python wrapper for EnBiD",
+    "creators": [
+        {
+            "affiliation": "https://ror.org/00b30xv10",
+            "name": "Thob, Adrien C. R.",
+            "orcid": "0000-0001-7928-1973"
+        }
+    ],
+    "contributors": [
+        {
+            "affiliation": "https://ror.org/00b30xv10",
+            "name": "Sanderson, Robyn E.",
+            "orcid": "0000-0003-3939-3297",
+            "type": "Supervisor"
+        }
+    ],
+    "license": "GPL-2.0-or-later",
+    "upload_type": "software"
+}
