@@ -22,16 +22,5 @@
     ],
     "license": "GPL-2.0-or-later",
     "upload_type": "software",
-    "description": "Python wrapper for EnBiD (<a href='http://ascl.net/1109.012' target='_blank' rel='noopener'>Sharma & Steinmetz 2011</a>)",
-    "custom": {
-        "code:codeRepository": "https://github.com/athob/py-EnBiD-ananke",
-        "code:developmentStatus": {
-            "id": "active"
-        },
-        "code:programmingLanguage": [
-            {
-                "id": "python"
-            }
-        ]
-    },
+    "description": "Python wrapper for EnBiD (<a href='http://ascl.net/1109.012' target='_blank' rel='noopener'>Sharma & Steinmetz 2011</a>)"
 }
