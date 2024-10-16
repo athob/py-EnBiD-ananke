@@ -16,5 +16,6 @@
         }
     ],
     "license": "GPL-2.0-or-later",
-    "upload_type": "software"
+    "upload_type": "software",
+    "description": "Python wrapper for EnBiD ([Sharma & Steinmetz 2011](http://ascl.net/1109.012))."
 }
