@@ -3,8 +3,9 @@
 Module utilities using built-in implementation
 """
 import subprocess
+import re
 
-__all__ = ['Singleton', 'execute']
+__all__ = ['Singleton', 'execute', 'get_version_of_command']
 
 
 class Singleton(type):
@@ -38,6 +39,11 @@ def execute(args, verbose=True, **kwargs):
     """
     for path in _execute_generator(args, **kwargs):
         print(path, end="") if verbose else None
+
+
+def get_version_of_command(cmd):
+    return re.findall("((?:[0-9]+\.)+[0-9]+)",
+                      str(subprocess.check_output([cmd, '--version'])))[0]
 
 
 if __name__ == '__main__':

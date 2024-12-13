@@ -22,9 +22,9 @@ import pandas as pd
 from sklearn import neighbors as nghb
 
 from .__metadata__ import *
-from .constants import *
-from .templates import *
-from .defaults import *
+from ._constants import *
+from ._templates import *
+from ._defaults import *
 from .utils import execute
 
 __all__ = ['enbid']
@@ -188,12 +188,12 @@ def run_enbid(name: Optional[Union[str, pathlib.Path]] = None, ngb: int = DEFAUL
         
         type_of_kernel : int (0, 1, 2, 3, 4, 5)
             Type of the kernel profile used:
-                0: B-spline
-                1: Top hat
-                2: Bi-weight (1-x^2)^2
-                3: Epanechikov
-                4: Cloud in cell
-                5: Triangular shaped cloud
+                0) B-spline
+                1) Top hat
+                2) Bi-weight (1-x^2)^2
+                3) Epanechikov
+                4) Cloud in cell
+                5) Triangular shaped cloud
             Default to 3.
         
         kernel_bias_correction : int (0, 1)
