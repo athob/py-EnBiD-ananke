@@ -47,4 +47,4 @@ def get_version_of_command(cmd):
 
 
 if __name__ == '__main__':
-    pass
+    raise NotImplementedError()

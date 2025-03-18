@@ -315,4 +315,4 @@ def enbid(*args: Tuple[Any], **kwargs: Dict[str, Any]) -> NDArray:
 
 
 if __name__ == '__main__':
-    pass
+    raise NotImplementedError()

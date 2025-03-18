@@ -65,3 +65,7 @@ DesNumNgbA             ${{{TTAGS.des_num_ngb_a}}}   % Neighbors for cal covar me
 TypeListOn        ${{{TTAGS.type_list_on}}}
 PeriodicBoundaryOn ${{{TTAGS.periodic_boundary_on}}}
 %--------------------------------------------------------""")
+
+
+if __name__ == '__main__':
+    raise NotImplementedError()

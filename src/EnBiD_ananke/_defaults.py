@@ -30,3 +30,7 @@ DEFAULT_FOR_PARAMFILE = {
 }
 
 TEMP_DIR = tempfile.TemporaryDirectory()
+
+
+if __name__ == '__main__':
+    raise NotImplementedError()

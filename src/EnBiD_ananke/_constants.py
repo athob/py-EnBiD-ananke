@@ -50,3 +50,7 @@ class Constants(metaclass=Singleton):
         return f"{self.enbid_paramfile}{USEDVALUES_SUFFIX}"
 
 CONSTANTS = Constants()
+
+
+if __name__ == '__main__':
+    raise NotImplementedError()
