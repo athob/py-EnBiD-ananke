@@ -48,7 +48,7 @@ __classifiers__ = [
     "Operating System :: Unix",
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering :: Astronomy"
-    ],
+    ]
 
 # CREDITS METADATA
 __credits__ = textwrap.fill(f"""
