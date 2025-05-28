@@ -1,0 +1,22 @@
+{
+    "access_right": "open",
+    "title": "py-EnBiD-ananke: a python wrapper for EnBiD",
+    "creators": [
+        {
+            "affiliation": "University of Pennsylvania",
+            "name": "Thob, Adrien C. R.",
+            "orcid": "0000-0001-7928-1973"
+        }
+    ],
+    "contributors": [
+        {
+            "affiliation": "University of Pennsylvania",
+            "name": "Sanderson, Robyn E.",
+            "orcid": "0000-0003-3939-3297",
+            "type": "Supervisor"
+        }
+    ],
+    "license": "GPL-2.0-or-later",
+    "upload_type": "software",
+    "description": "Python wrapper for EnBiD (<a href='http://ascl.net/1109.012' target='_blank' rel='noopener'>Sharma & Steinmetz 2011</a>)"
+}
