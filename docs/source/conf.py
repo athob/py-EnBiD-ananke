@@ -3,7 +3,7 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-package_name = 'EnBiD_ananke'
+package_name = 'enbid_ananke'
 
 import os
 import sys

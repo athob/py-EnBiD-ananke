@@ -2,7 +2,7 @@
 import pytest
 import pathlib
 
-from ..EnBiD_ananke import __make_path_of_name
+from ..enbid_ananke import __make_path_of_name
 from .utils import in_tmp_wd
 
 

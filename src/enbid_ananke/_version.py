@@ -52,8 +52,8 @@ def get_config() -> VersioneerConfig:
     cfg.VCS = "git"
     cfg.style = "pep440"
     cfg.tag_prefix = "v"
-    cfg.parentdir_prefix = "EnBiD_ananke-"
-    cfg.versionfile_source = "src/EnBiD_ananke/_version.py"
+    cfg.parentdir_prefix = "enbid_ananke-"
+    cfg.versionfile_source = "src/enbid_ananke/_version.py"
     cfg.verbose = False
     return cfg
 

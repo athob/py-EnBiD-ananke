@@ -8,7 +8,7 @@ import stat
 import contextlib
 import functools
 
-from ..EnBiD_ananke import CONSTANTS, DEFAULT_FOR_PARAMFILE, TTAGS, ENBID_OUT_EXT
+from ..enbid_ananke import CONSTANTS, DEFAULT_FOR_PARAMFILE, TTAGS, ENBID_OUT_EXT
 
 n_sample = 100
 

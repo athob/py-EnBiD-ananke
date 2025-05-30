@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-EnBiD
+enbid_ananke
 ======
 
 Provides a set of utilities to run the kernel density estimator EnBiD

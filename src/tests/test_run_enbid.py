@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import pathlib
 
-from ..EnBiD_ananke import CONSTANTS, run_enbid
+from ..enbid_ananke import CONSTANTS, run_enbid
 from .utils import in_tmp_wd, make_enbid_test_exec, list_stdout
 
 

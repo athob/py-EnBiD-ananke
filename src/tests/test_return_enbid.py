@@ -3,7 +3,7 @@ import random
 
 import numpy as np
 
-from ..EnBiD_ananke import return_enbid
+from ..enbid_ananke import return_enbid
 from .utils import in_tmp_wd, simulate_enbid_output
 
 

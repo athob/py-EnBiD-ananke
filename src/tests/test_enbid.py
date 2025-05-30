@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from ..EnBiD_ananke import enbid
+from ..enbid_ananke import enbid
 from .utils import in_tmp_wd
 
 

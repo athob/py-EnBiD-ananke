@@ -4,7 +4,7 @@ import pathlib
 import numpy as np
 from sklearn import neighbors as nghb
 
-from ..EnBiD_ananke import write_for_enbid, DEFAULT_FOR_PARAMFILE, TTAGS
+from ..enbid_ananke import write_for_enbid, DEFAULT_FOR_PARAMFILE, TTAGS
 from .utils import n_sample, in_tmp_wd
 
 

@@ -2,7 +2,7 @@
 """
 Module miscellaneous utilities
 """
-from EnBiD_ananke._builtin_utils import Singleton, execute
+from enbid_ananke._builtin_utils import Singleton, execute
 
 __all__ = ['Singleton', 'execute']
 
