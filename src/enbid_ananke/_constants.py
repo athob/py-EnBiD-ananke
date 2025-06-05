@@ -5,11 +5,11 @@ Contains the EnBiD module constants.
 import pathlib
 from dataclasses import dataclass
 
+from ._name import *
 from ._builtin_utils import Singleton
 
 __all__ = ['NAME', 'LOG_DIR', 'SRC_DIR', 'ENBID_URL', 'CONSTANTS', 'SNAPSHOT_FILEBASE', 'ENBID_OUT_EXT', 'HASH_EXT', 'HASH_ENCODING']
 
-NAME = 'enbid_ananke'
 ENBID2 = 'Enbid-2.0'
 ENBID_URL = 'https://sourceforge.net/projects/enbid/files/latest/download'
 ENBID_EXEC = 'Enbid'

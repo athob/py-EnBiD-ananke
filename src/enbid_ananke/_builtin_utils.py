@@ -2,10 +2,13 @@
 """
 Module utilities using built-in implementation
 """
+import sys
+from types import ModuleType
 import subprocess
+import importlib.util
 import re
 
-__all__ = ['Singleton', 'execute', 'get_version_of_command']
+__all__ = ['Singleton', 'execute', 'get_version_of_command', 'import_source_file']
 
 
 class Singleton(type):
@@ -44,6 +47,15 @@ def execute(args, verbose=True, **kwargs):
 def get_version_of_command(cmd):
     return re.findall("((?:[0-9]+\.)+[0-9]+)",
                       str(subprocess.check_output([cmd, '--version'])))[0]
+
+
+def import_source_file(module_name, file_path) -> ModuleType:
+    # based on https://docs.python.org/3/library/importlib.html#importing-a-source-file-directly
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
 
 
 if __name__ == '__main__':

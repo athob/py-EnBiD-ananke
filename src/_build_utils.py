@@ -134,7 +134,6 @@ def make_package_data():
                                     basedir=pathlib.Path(SRC_DIR, NAME))}
 
 
-
 def make_cmdclass():
     """
     """
