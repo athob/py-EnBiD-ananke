@@ -29,6 +29,6 @@ setup(name=NAME,
       package_data=make_package_data(),
       include_package_data=True,
       install_requires=['numpy>=1.22,<2', 'pandas>=2,<3', 'scikit-learn>=1.1,<2'],
-      ext_modules=[setuptools.extension.Extension('', [])],
+    #   ext_modules=[setuptools.extension.Extension('', [])],
       cmdclass=make_cmdclass(),
       )
