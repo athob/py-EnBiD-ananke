@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Contains the EnBiD module constants.
+Contains the enbid_ananke module constants.
 """
 import pathlib
 from dataclasses import dataclass

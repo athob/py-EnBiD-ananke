@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 enbid_ananke
-======
+============
 
 Provides a set of utilities to run the kernel density estimator EnBiD
 (`Sharma & Steinmetz 2011 <http://ascl.net/1109.012>`).
@@ -9,7 +9,7 @@ Provides a set of utilities to run the kernel density estimator EnBiD
 How to use
 ----------
 
-EnBiD comes with the function enbid, please refer to its documentation
+enbid_ananke comes with the function enbid, please refer to its documentation
 for further help.
 """
 from typing import Any, Optional, Union, Tuple, Dict

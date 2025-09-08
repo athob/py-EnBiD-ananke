@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Contains the EnBiD module templates.
+Contains the enbid_ananke module templates.
 """
 from string import Template
 from dataclasses import dataclass

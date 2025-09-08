@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Contains the EnBiD module metadata.
+Contains the enbid_ananke module metadata.
 """
 import _sitebuiltins
 import textwrap

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Contains the EnBiD module defaults.
+Contains the enbid_ananke module defaults.
 """
 import tempfile
 
