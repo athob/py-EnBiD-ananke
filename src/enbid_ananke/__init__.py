@@ -282,7 +282,7 @@ def return_enbid(name: Optional[Union[str, pathlib.Path]] = None) -> NDArray:
             Array representing the kernel density estimates output by EnBiD
     """
     path: pathlib.Path = __make_path_of_name(name)
-    usedvals = pd.read_table(path / CONSTANTS.usedvalues, header=None, delim_whitespace=True,
+    usedvals = pd.read_table(path / CONSTANTS.usedvalues, header=None, sep="\s+",
                              index_col=0).T.reset_index(drop=True).to_dict('records')[0]
     rho: NDArray = np.loadtxt(path / f"{DEFAULT_FOR_PARAMFILE[TTAGS.fname]}{usedvals[SNAPSHOT_FILEBASE]}.{ENBID_OUT_EXT}")
     return rho
