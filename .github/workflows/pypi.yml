@@ -29,10 +29,12 @@ jobs:
     - name: Set up Python
       run: |
         # Use Python 3.10 from the manylinux image (choose a version you support)
-        export PATH=/opt/python/cp310-cp310/bin:$PATH
-        python -m pip install --upgrade pip build --user
+        PYTHON=/opt/python/cp310-cp310/bin/python
+        $PYTHON -m pip install --upgrade pip build --user
     - name: Build a binary wheel and a source tarball
-      run: python -m build
+      run: |
+        PYTHON=/opt/python/cp310-cp310/bin/python
+        $PYTHON -m build
     - name: Store the distribution packages
       uses: actions/upload-artifact@v5
       with:
