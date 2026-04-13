@@ -32,12 +32,12 @@ jobs:
         export PATH=/opt/python/cp310-cp310/bin:$PATH
     - name: Install pypa/build
       run: >-
-        python3 -m
+        python -m
         pip install --upgrade
         pip build
         --user
     - name: Build a binary wheel and a source tarball
-      run: python3 -m build
+      run: python -m build
     - name: Store the distribution packages
       uses: actions/upload-artifact@v5
       with:
