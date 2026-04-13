@@ -24,6 +24,8 @@ jobs:
           -w /workspace \
           quay.io/pypa/manylinux2014_x86_64 \
           bash -c "
+            # Install git (required by versioneer)
+            yum install -y git
             # Set up Python (use 3.10 from the manylinux image, choose a version you support)
             export PATH=/opt/python/cp310-cp310/bin:\$PATH
             python -m pip install --upgrade pip build
