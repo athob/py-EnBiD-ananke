@@ -22,6 +22,7 @@ jobs:
     # Manually clone the repository (Node.js actions don't work well inside the container)
     - name: Checkout code
       run: |
+        git config --global --add safe.directory '*'
         git clone https://github.com/${{ github.repository }} .
         git checkout ${{ github.sha }}
     # Set up a usable Python environment (manylinux2014 doesn't have a default 'python')
