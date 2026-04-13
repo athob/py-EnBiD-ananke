@@ -6,35 +6,32 @@ jobs:
   build:
     name: Build distribution 📦
     runs-on: ubuntu-latest
-    container:
-      image: quay.io/pypa/manylinux2014_x86_64
 
     steps:
-    # These GitHub Actions don't work in manylinux container
-    # - uses: actions/checkout@v6
-    #   with:
-    #     persist-credentials: false
-    #     fetch-depth: 0
-    # - name: Set up Python
-    #   uses: actions/setup-python@v6
-    #   with:
-    #     python-version: "3.x"
-    # Manually clone the repository (Node.js actions don't work well inside the container)
     - name: Checkout code
+      uses: actions/checkout@v6
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+    - name: Build distributions inside manylinux2014 container
       run: |
-        git config --global --add safe.directory '*'
-        git clone https://github.com/${{ github.repository }} .
-        git checkout ${{ github.sha }}
-    # Set up a usable Python environment (manylinux2014 doesn't have a default 'python')
-    - name: Set up Python
-      run: |
-        # Use Python 3.10 from the manylinux image (choose a version you support)
-        PYTHON=/opt/python/cp310-cp310/bin/python
-        $PYTHON -m pip install --upgrade pip build --user
-    - name: Build a binary wheel and a source tarball
-      run: |
-        PYTHON=/opt/python/cp310-cp310/bin/python
-        $PYTHON -m build
+        # Create a directory on the host to store the built artifacts
+        mkdir -p dist
+
+        # Run the manylinux container, mounting the repository and the dist directory
+        docker run --rm \
+          -v ${{ github.workspace }}:/workspace \
+          -w /workspace \
+          quay.io/pypa/manylinux2014_x86_64 \
+          bash -c "
+            # Set up Python (use 3.10 from the manylinux image, choose a version you support)
+            export PATH=/opt/python/cp310-cp310/bin:\$PATH
+            python -m pip install --upgrade pip build
+            # Build the distribution (this will download and compile Enbid inside the container)
+            python -m build
+            # The built files will appear in /workspace/dist on the container,
+            # which is actually the host's ${{ github.workspace }}/dist due to the volume mount
+          "
     - name: Store the distribution packages
       uses: actions/upload-artifact@v5
       with:
