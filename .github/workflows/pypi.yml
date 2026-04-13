@@ -30,12 +30,7 @@ jobs:
       run: |
         # Use Python 3.10 from the manylinux image (choose a version you support)
         export PATH=/opt/python/cp310-cp310/bin:$PATH
-    - name: Install pypa/build
-      run: >-
-        python -m
-        pip install --upgrade
-        pip build
-        --user
+        python -m pip install --upgrade pip build --user
     - name: Build a binary wheel and a source tarball
       run: python -m build
     - name: Store the distribution packages
