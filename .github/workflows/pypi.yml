@@ -1,6 +1,9 @@
 name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
 
-on: push
+on:
+  push:
+    tags:
+      - 'v*'               # Trigger only when a tag starting with 'v' is pushed
 
 jobs:
   build:
