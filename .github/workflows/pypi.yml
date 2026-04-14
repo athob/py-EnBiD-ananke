@@ -20,10 +20,11 @@ jobs:
         persist-credentials: false
         fetch-depth: 0
     - name: Wait for CI/CD workflow to succeed
+      if: contains(github.ref_name, 'a') || contains(github.ref_name, 'b') || contains(github.ref_name, 'rc')
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        WORKFLOW_NAME="CI/CD"   # This is the 'name:' from main.yml
+        WORKFLOW_NAME="CI/CD"
         TIMEOUT=600
         INTERVAL=10
 
@@ -34,10 +35,11 @@ jobs:
 
         START_TIME=$(date +%s)
         while true; do
-          # Query workflow runs for this commit
-          RESPONSE=$(gh api repos/${{ github.repository }}/commits/$COMMIT_SHA/check-runs)
-          STATUS=$(echo "$RESPONSE" | jq -r ".check_runs[] | select(.name == \"$WORKFLOW_NAME\") | .conclusion")
-          
+          # Get all workflow runs and filter by head_sha and name
+          RESPONSE=$(gh api repos/${{ github.repository }}/actions/runs --paginate)
+          STATUS=$(echo "$RESPONSE" | jq -r --arg sha "$COMMIT_SHA" --arg name "$WORKFLOW_NAME" \
+            '.workflow_runs[] | select(.head_sha == $sha and .name == $name) | .conclusion' | head -1)
+
           if [ "$STATUS" = "success" ]; then
             echo "Workflow succeeded!"
             break
