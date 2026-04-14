@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'               # Trigger only when a tag starting with 'v' is pushed
 
+env:
+  PACKAGE_NAME: enbid-ananke
+
 jobs:
   build:
     name: Build distribution 📦
@@ -54,8 +57,8 @@ jobs:
     runs-on: ubuntu-latest
 
     environment:
-      name: testpypi
-      url: https://test.pypi.org/p/enbid-ananke  # Replace <package-name> with your PyPI project name
+      name: release
+      url: https://test.pypi.org/p/${{ env.PACKAGE_NAME }}
 
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
@@ -79,8 +82,8 @@ jobs:
     runs-on: ubuntu-latest
 
     environment:
-      name: pypi
-      url: https://pypi.org/p/enbid-ananke  # Replace <package-name> with your PyPI project name
+      name: release
+      url: https://pypi.org/p/${{ env.PACKAGE_NAME }}
 
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
