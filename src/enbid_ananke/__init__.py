@@ -31,6 +31,7 @@ from numpy.typing import ArrayLike, NDArray
 import pathlib
 import warnings
 import hashlib
+import struct
 import numpy as np
 import pandas as pd
 from sklearn import neighbors as nghb
@@ -51,7 +52,7 @@ def __make_path_of_name(name : Optional[Union[str, pathlib.Path]] = None) -> pat
 
         Call signature::
 
-            path = run_enbid(name=None)
+            path = __make_path_of_name(name=None)
         
         Parameters
         ----------
@@ -71,26 +72,103 @@ def __make_path_of_name(name : Optional[Union[str, pathlib.Path]] = None) -> pat
     return path
 
 
-def write_for_enbid(points: ArrayLike, name : Optional[Union[str, pathlib.Path]] = None,
-                    caching : bool = False) -> pathlib.Path:
+def write_gadget_file(filename: pathlib.Path, pos: NDArray, mass: NDArray,
+                      boxsize: float = 0.0, time: float = 0.0, redshift: float = 0.0,
+                      omega0: float = 0.0, omegalambda: float = 0.0, hubble: float = 0.7,
+                      particle_type: int = 1) -> None:
     """
-        Writes the input files for EnBiD given the input particles 3D
-        coordinates.
+    Write a GADGET-1 format snapshot file to serve as input for EnBiD (3D version).
+
+    Parameters
+    ----------
+    filename : pathlib.Path
+        Output file path.
+    pos : ndarray, shape (N, 3)
+        Particle positions (float32).
+    mass : ndarray, shape (N,)
+        Particle masses (float32).
+    boxsize : float, optional
+        Size of periodic box.
+    time, redshift, omega0, omegalambda, hubble : float, optional
+        Cosmological parameters (ignored by EnBiD but part of header).
+    particle_type : int, optional
+        Particle type index (0-5).
+    """
+    N = pos.shape[0]
+    if mass.shape[0] != N:
+        raise ValueError("pos and mass must have same number of particles")
+
+    # Ensure correct data types
+    pos = np.asarray(pos, dtype=np.float32)
+    mass = np.asarray(mass, dtype=np.float32)
+    vel = np.zeros((N, 3), dtype=np.float32)      # dummy velocities
+    ids = np.arange(1, N+1, dtype=np.int32)       # dummy IDs (1-based)
+
+    # Build header (256 bytes)
+    npart = np.zeros(6, dtype=np.int32)
+    npart[particle_type] = N
+    massarr = np.zeros(6, dtype=np.float64)
+    nall = npart.copy()
+
+    # Build header without padding first, then pad to 256 bytes
+    header_data = struct.pack(
+        '<6i6d2d2i6i2i4d3i',
+        npart[0], npart[1], npart[2], npart[3], npart[4], npart[5],
+        massarr[0], massarr[1], massarr[2], massarr[3], massarr[4], massarr[5],
+        time, redshift,
+        0, 0,                              # flag_sfr, flag_feedback
+        nall[0], nall[1], nall[2], nall[3], nall[4], nall[5],
+        0, 1,                              # flag_cooling, num_files
+        boxsize, omega0, omegalambda, hubble,
+        0, 0, 1                            # flag_id, flag_dim, flag_density
+    )
+    # Pad to exactly 256 bytes
+    padding_len = 256 - len(header_data)
+    if padding_len < 0:
+        raise RuntimeError("Header exceeds 256 bytes")
+    header_data += b'\x00' * padding_len
+
+    def write_record(f, data):
+        f.write(struct.pack('<i', len(data)))
+        f.write(data)
+        f.write(struct.pack('<i', len(data)))
+
+    with open(filename, 'wb') as f:
+        write_record(f, header_data)
+        write_record(f, pos.ravel().tobytes())
+        write_record(f, vel.ravel().tobytes())
+        write_record(f, ids.tobytes())
+        write_record(f, mass.ravel().tobytes())
+
+
+def write_for_enbid(points: ArrayLike, mass: Optional[ArrayLike] = None,
+                    name: Optional[Union[str, pathlib.Path]] = None,
+                    caching: bool = False) -> pathlib.Path:
+    """
+        Writes the input files for EnBiD given the input particles 3D coordinates.
+        The coordinate frame is automatically centered on the most clustered structure
+        to improve numerical stability.
 
         Call signature::
 
-            path = write_for_enbid(points, name=None, caching=False)
+            path = write_for_enbid(points, mass=None, name=None, caching=False)
         
         Parameters
         ----------
         points : array_like
             Contains 3D coordinates of the input particles, must be of shape
             (N,3) for any given N integer.
-        
-        name : string
+
+        mass : array_like, optional
+            Contains the mass of each particle. Must be a 1D array of length N.
+            If provided, a GADGET binary input file is written and EnBiD will
+            compute mass-weighted densities. If None (default), an ASCII file
+            is written and unit masses are assumed.
+
+        name : string, optional
             Name of folder where to place EnBiD input files. Default to None.
         
-        caching : bool
+        caching : bool, optional
             If True, check if EnBiD input file already exists and ignore
             writing if it does. Default to False.
         
@@ -103,13 +181,21 @@ def write_for_enbid(points: ArrayLike, name : Optional[Union[str, pathlib.Path]]
     enbid_inputfile: pathlib.Path = path / DEFAULT_FOR_PARAMFILE[TTAGS.fname]
     enbid_inputhashfile: pathlib.Path = enbid_inputfile.with_suffix(f".{HASH_EXT}")
     points: NDArray = np.asarray(points)
-    inputhash = bytes(hashlib.sha256(points).hexdigest(), HASH_ENCODING)
+    mass_arr: Optional[NDArray] = np.asarray(mass) if mass is not None else None
+    # Compute hash including mass if present
+    hash_input = points.tobytes()
+    if mass_arr is not None:
+        hash_input += mass_arr.tobytes()
+    inputhash = bytes(hashlib.sha256(hash_input).hexdigest(), HASH_ENCODING)
+    # Check if we need to write the file
     if ((enbid_inputhashfile.read_bytes() != inputhash # proceed if hashes don't match,
          if (enbid_inputfile.exists() and              # only if enbid_inputfile exists,
              enbid_inputhashfile.exists())             # and enbid_inputhashfile exists,
          else True)                                    # otherwise proceed if both don't exist
         if caching else True):                         # -> proceed anyway if caching is False
         assert points.ndim == 2 and points.shape[-1] == 3, 'Array-like input must be of shape (X, 3)'
+        if mass_arr is not None:
+            assert mass_arr.ndim == 1 and mass_arr.shape[0] == points.shape[0], 'mass must be 1D array with same length as points'
         # depreciating that warning
         # temp = np.max(np.abs(np.average(points, axis=0)/np.std(points, axis=0)))
         # if temp>1: warnings.warn("Input points may be not centered, which may cause EnBiD to run into a SegmentationFault")
@@ -121,41 +207,60 @@ def write_for_enbid(points: ArrayLike, name : Optional[Union[str, pathlib.Path]]
         most_clustered_structure_center: NDArray = np.average(most_clustered_structure, axis=0)
         #
         coordinates: NDArray = points - most_clustered_structure_center
-        np.savetxt(enbid_inputfile, coordinates, delimiter=' ')
+
+        if mass_arr is None:
+            # ASCII format
+            np.savetxt(enbid_inputfile, coordinates, delimiter=' ')
+        else:
+            # GADGET binary format
+            write_gadget_file(enbid_inputfile, coordinates, mass_arr)
+
         enbid_inputhashfile.write_bytes(inputhash)
+    
     return path
 
 
-def run_enbid(name: Optional[Union[str, pathlib.Path]] = None, ngb: int = DEFAULT_NGB,
+def run_enbid(points: ArrayLike, mass: Optional[ArrayLike] = None,
+              name: Optional[Union[str, pathlib.Path]] = None, ngb: int = DEFAULT_NGB,
               verbose: bool = True, caching: bool = False, **kwargs: Dict[str, Any]) -> pathlib.Path:
     """
         Run EnBiD using input files in name.
 
         Call signature::
 
-            path = run_enbid(name=None, ngb=64, verbose=True,
+            path = run_enbid(points, mass=None, name=None, ngb=64, verbose=True,
                              caching=False, **kwargs)
         
         Parameters
         ----------
-        name : string
+        points : array_like
+            Contains 3D coordinates of the input particles, must be of shape
+            (N,3) for any given N integer.
+
+        mass : array_like, optional
+            Contains the mass of each particle. Must be a 1D array of length N.
+            If provided, a GADGET binary input file is written and EnBiD will
+            compute mass-weighted densities. If None (default), an ASCII file
+            is written and unit masses are assumed.
+
+        name : string, optional
             Name of folder where EnBiD input files are located. Default to
             None.
 
-        ngb : int
+        ngb : int, optional
             Number of neighbouring particles EnBiD should consider in the
             smoothing for the density estimation. Default to {DEFAULT_NGB}.
 
-        verbose : bool
+        verbose : bool, optional
             Verbose boolean flag to allow EnBiD to print what it's doing to
             stdout. Default to True.
 
-        caching : bool
+        caching : bool, optional
             If True, check if EnBiD paramfile and usedvalues files already
             exist, and ignore running if parameters from the previous run are
             the same. Default to False.
         
-        spatial_scale : float
+        spatial_scale : float, optional
             Scaling between position and velocity space where the scaling goes
             as velocity = position/spatial_scale if spatial_scale is set
             strictly positive, or velocity = position/std(position) if
@@ -163,30 +268,29 @@ def run_enbid(name: Optional[Union[str, pathlib.Path]] = None, ngb: int = DEFAUL
             deviation for each coordinate). Default to 1 - TODO currently not
             implemented.
         
-        part_bounday : int
+        part_boundary : int, optional
             Minimum number of particles which a node must contain to have a
             boundary correction applied to its surfaces during tree generation.
-            Optimum choice should be whichever the higher between 7 or d+1
-            where d is the dimensionality of the space considered.
-            Default to 7.
+            Optimum choice should be the larger of 7 or d+1, where d is the
+            dimensionality of the space considered. Default to 7.
         
-        node_splitting_criterion : int (0, 1)
+        node_splitting_criterion : int (0, 1), optional
             Flag to allow for the node splitting to always split in priority
             the dimension with lowest Shannon entropy. If set to 0, the
             criteria splits each dimension alternately. Default to 1.
         
-        cubic_cells : int (0, 1)
+        cubic_cells : int (0, 1), optional
             Flag to allow the node splitting to use position or velocity
             subspaces rather than individual dimensions when generating cells.
             Only work for 3 & 6 dimensional spaces. Default to 0 - TODO
             currently not implemented.
         
-        median_splitting_on : int (0, 1)
+        median_splitting_on : int (0, 1), optional
             Flag to allow for cell splitting to happen at the mean of data
-            points when building the tree for faster estimates. Default to 0
-            - TODO currently not implemented.
+            points when building the tree for faster estimates. Default to 1
+            (requires EnBiD compiled with -DMEDIAN TODO).
         
-        type_of_smoothing : int (0, 1, 2, 3, 4, 5)
+        type_of_smoothing : int (0, 1, 2, 3, 4, 5), optional
             Type of smoothing used:
                 0) None
                 1) FiEstAS
@@ -196,11 +300,11 @@ def run_enbid(name: Optional[Union[str, pathlib.Path]] = None, ngb: int = DEFAUL
                 5) Adaptive metric product form kernel
             Default to 3.
         
-        vol_corr : int (0, 1)
+        vol_corr : int (0, 1), optional
             Flag to enable a correction that avoid underestimating density
             when the smoothing box extends outside the boundary. Default to 1.
         
-        type_of_kernel : int (0, 1, 2, 3, 4, 5)
+        type_of_kernel : int (0, 1, 2, 3, 4, 5), optional
             Type of the kernel profile used:
                 0) B-spline
                 1) Top hat
@@ -210,32 +314,32 @@ def run_enbid(name: Optional[Union[str, pathlib.Path]] = None, ngb: int = DEFAUL
                 5) Triangular shaped cloud
             Default to 3.
         
-        kernel_bias_correction : int (0, 1)
+        kernel_bias_correction : int (0, 1), optional
             Flag to enable corrections that displace central data points when
             computing densities, and reduce bias caused by irregularly
             distributed data. Default to 1.
         
-        anisotropy_kernel : int (0, 1)
+        anisotropy_kernel : int (0, 1), optional
             Flag to enable the use of anisotropic kernels which can have both
             shear and rotation. Kerels become then rotated ellipsoids in the
             density computation. With it on, type_of_smoothing should be either
             2 or 3. Default to 0.
         
-        anisotropy : float
+        anisotropy : float, optional
             Minimum allowable minor to major axis ratio of the kernel smoothing
             lengths for computational management. Default to 0.
         
-        ngb_a : int
+        ngb_a : int, optional
             Number of neighbouring particles EnBiD should consider when
             computing the anisotropic kernel. Default to ngb.
         
-        type_list_on : int (0, 1)
+        type_list_on : int (0, 1), optional
             Flag to extend the number of particle types on which EnBiD can
             run independent density estimations from the default 6 types of
             GADGET formated data. Default to 0 - TODO currently not
             implemented.
         
-        periodic_boundary_on : int (0, 1)
+        periodic_boundary_on : int (0, 1), optional
             Flag to allow periodic boundary conditions. Default to 0 - TODO
             currently not implemented.
         
@@ -244,7 +348,11 @@ def run_enbid(name: Optional[Union[str, pathlib.Path]] = None, ngb: int = DEFAUL
         path : pathlib.Path
             Path of folder where EnBiD output files are located.
     """
-    path: pathlib.Path = __make_path_of_name(name)
+    # Determine ICFormat based on whether mass is provided
+    ic_format = 1 if mass is not None else 0
+    kwargs[TTAGS.ic_format] = ic_format
+    # path: pathlib.Path = __make_path_of_name(name)
+    path = write_for_enbid(points, mass=mass, name=name, caching=caching)
     kwargs[TTAGS.des_num_ngb] = ngb
     kwargs[TTAGS.des_num_ngb_a] = kwargs.pop('ngb_a', ngb)
     paramfile_text: str = ENBID_PARAMFILE_TEMPLATE.substitute(DEFAULT_FOR_PARAMFILE, **kwargs)
@@ -262,10 +370,54 @@ def run_enbid(name: Optional[Union[str, pathlib.Path]] = None, ngb: int = DEFAUL
 run_enbid.__doc__ = run_enbid.__doc__.format(DEFAULT_NGB=DEFAULT_NGB)
 
 
+def read_enbid_binary(filename: pathlib.Path) -> NDArray:
+    """
+    Read a binary EnBiD density file (GADGET-style output).
+
+    The file contains a 256-byte header followed by a block of
+    single-precision floats (density for each particle).
+    Each record is preceded and followed by a 4-byte integer
+    indicating the block size (Fortran unformatted).
+
+    Parameters
+    ----------
+    filename : pathlib.Path
+        Path to the .est file.
+
+    Returns
+    -------
+    density : ndarray
+        Array of density values (float32).
+    """
+    with open(filename, 'rb') as f:
+        # Read and skip header block
+        blklen_data = f.read(4)
+        if len(blklen_data) != 4:
+            raise IOError("Failed to read block size for header")
+        blklen = struct.unpack('<i', blklen_data)[0]
+        if blklen != 256:
+            raise ValueError(f"Expected header size 256, got {blklen}")
+        f.read(256)  # header
+        f.read(4)    # trailing block size
+
+        # Read density block
+        blklen_data = f.read(4)
+        if len(blklen_data) != 4:
+            raise IOError("Failed to read block size for density")
+        blklen = struct.unpack('<i', blklen_data)[0]
+        n_floats = blklen // 4
+        density_bytes = f.read(blklen)
+        density = np.frombuffer(density_bytes, dtype=np.float32, count=n_floats)
+    return density
+
+
 def return_enbid(name: Optional[Union[str, pathlib.Path]] = None) -> NDArray:
     """
         Read EnBiD output file and returns the associated kernel density
         estimates after running the EnBiD estimator.
+
+        Automatically detects whether the output is ASCII or binary
+        based on the ICFormat used in the run.
 
         Call signature::
 
@@ -284,17 +436,26 @@ def return_enbid(name: Optional[Union[str, pathlib.Path]] = None) -> NDArray:
     path: pathlib.Path = __make_path_of_name(name)
     usedvals = pd.read_table(path / CONSTANTS.usedvalues, header=None, sep="\s+",
                              index_col=0).T.reset_index(drop=True).to_dict('records')[0]
-    rho: NDArray = np.loadtxt(path / f"{DEFAULT_FOR_PARAMFILE[TTAGS.fname]}{usedvals[SNAPSHOT_FILEBASE]}.{ENBID_OUT_EXT}")
+    output_file = path / f"{DEFAULT_FOR_PARAMFILE[TTAGS.fname]}{usedvals[SNAPSHOT_FILEBASE]}.{ENBID_OUT_EXT}"
+
+    # Check ICFormat used in this run
+    ic_format = int(usedvals.get('ICFormat', 0))
+    if ic_format == 1:
+        # Binary GADGET output
+        rho = read_enbid_binary(output_file)
+    else:
+        # ASCII output (default)
+        rho = np.loadtxt(output_file)
     return rho
 
 
-def enbid(*args: Tuple[Any], **kwargs: Dict[str, Any]) -> NDArray:
+def enbid(points: ArrayLike, mass: Optional[ArrayLike] = None, **kwargs: Dict[str, Any]) -> NDArray:
     """
         Returns kernel density estimates given a set of particle 3D coordinates.
 
         Call signature::
 
-            rho = enbid(points, name=None, **kwargs)
+            rho = enbid(points, mass=None, name=None, **kwargs)
         
         Parameters
         ----------
@@ -302,11 +463,17 @@ def enbid(*args: Tuple[Any], **kwargs: Dict[str, Any]) -> NDArray:
             Contains 3D coordinates of the input particles, must be of shape
             (N,3) for any given N integer.
 
-        name : string
+        mass : array_like, optional
+            Contains the mass of each particle. Must be a 1D array of length N.
+            If provided, a GADGET binary input file is written and EnBiD will
+            compute mass-weighted densities (i.e., mass density). If None (default),
+            an ASCII file is written and unit masses are assumed (number density).
+
+        name : string, optional
             Name of folder where to save the input/output files for the EnBiD
             estimator. Default to None.
         
-        caching : bool
+        caching : bool, optional
             Only to be used with a given folder under argument name. If True,
             check if EnBiD had already been used to produce the kernel density
             estimates. If it hasn't, compute the estimates, otherwise, load
@@ -322,10 +489,11 @@ def enbid(*args: Tuple[Any], **kwargs: Dict[str, Any]) -> NDArray:
         rho : array_like
             Array representing kernel density estimates for the input particles
     """
-    points = args[0]
+    # points = args[0]
     name = kwargs.pop('name', None)
     caching = False if name is None else kwargs.pop('caching', False)
-    return return_enbid(run_enbid(write_for_enbid(points, name=name, caching=caching), caching=caching, **kwargs))
+    # return return_enbid(run_enbid(write_for_enbid(points, name=name, caching=caching), caching=caching, **kwargs))
+    return return_enbid(run_enbid(points, mass=mass, name=name, caching=caching, **kwargs))
 
 
 if __name__ == '__main__':

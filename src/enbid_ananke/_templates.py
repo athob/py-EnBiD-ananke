@@ -26,6 +26,7 @@ __all__ = ['TTAGS', 'ENBID_PARAMFILE_TEMPLATE']
 @dataclass(frozen=True)
 class TemplateTags(metaclass=Singleton):
     fname: str                    = 'fname'
+    ic_format: str                = 'ic_format'
     des_num_ngb: str              = 'des_num_ngb'
     spatial_scale: str            = 'spatial_scale'
     part_boundary: str            = 'part_boundary'
@@ -48,7 +49,7 @@ ENBID_PARAMFILE_TEMPLATE = Template(f"""%  Input and Output
 InitCondFile     ${{{TTAGS.fname}}}
 
 %-------------------------------------------------------
-ICFormat                  0     % O)ASCII 1)Gadget 2)User defined
+ICFormat                  ${{{TTAGS.ic_format}}}     % O)ASCII 1)Gadget 2)User defined
 SnapshotFileBase        _d3n${{{TTAGS.des_num_ngb}}}
 
 %-------------------------------------------------------
