@@ -199,14 +199,17 @@ def write_for_enbid(points: ArrayLike, mass: Optional[ArrayLike] = None,
         # depreciating that warning
         # temp = np.max(np.abs(np.average(points, axis=0)/np.std(points, axis=0)))
         # if temp>1: warnings.warn("Input points may be not centered, which may cause EnBiD to run into a SegmentationFault")
-        # center frame on most clustered structure using NN distances
-        NN = nghb.NearestNeighbors(n_neighbors=2)
-        NN.fit(points)
-        NN_distances: NDArray = NN.kneighbors(points)[0][:,1]
-        most_clustered_structure: NDArray = points[NN_distances < np.median(NN_distances)]
-        most_clustered_structure_center: NDArray = np.average(most_clustered_structure, axis=0)
-        #
-        coordinates: NDArray = points - most_clustered_structure_center
+        if points.shape[0]:
+            # center frame on most clustered structure using NN distances
+            NN = nghb.NearestNeighbors(n_neighbors=2)
+            NN.fit(points)
+            NN_distances: NDArray = NN.kneighbors(points)[0][:,1]
+            most_clustered_structure: NDArray = points[NN_distances < np.median(NN_distances)]
+            most_clustered_structure_center: NDArray = np.average(most_clustered_structure, axis=0)
+            #
+            coordinates: NDArray = points - most_clustered_structure_center
+        else:
+            coordinates: NDArray = points
 
         if mass_arr is None:
             # ASCII format
