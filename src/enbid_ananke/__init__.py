@@ -196,9 +196,6 @@ def write_for_enbid(points: ArrayLike, mass: Optional[ArrayLike] = None,
         assert points.ndim == 2 and points.shape[-1] == 3, 'Array-like input must be of shape (X, 3)'
         if mass_arr is not None:
             assert mass_arr.ndim == 1 and mass_arr.shape[0] == points.shape[0], 'mass must be 1D array with same length as points'
-        # depreciating that warning
-        # temp = np.max(np.abs(np.average(points, axis=0)/np.std(points, axis=0)))
-        # if temp>1: warnings.warn("Input points may be not centered, which may cause EnBiD to run into a SegmentationFault")
         if points.shape[0]:
             # center frame on most clustered structure using NN distances
             NN = nghb.NearestNeighbors(n_neighbors=2)
@@ -354,7 +351,6 @@ def run_enbid(points: ArrayLike, mass: Optional[ArrayLike] = None,
     # Determine ICFormat based on whether mass is provided
     ic_format = 1 if mass is not None else 0
     kwargs[TTAGS.ic_format] = ic_format
-    # path: pathlib.Path = __make_path_of_name(name)
     path = write_for_enbid(points, mass=mass, name=name, caching=caching)
     kwargs[TTAGS.des_num_ngb] = ngb
     kwargs[TTAGS.des_num_ngb_a] = kwargs.pop('ngb_a', ngb)
@@ -495,7 +491,6 @@ def enbid(points: ArrayLike, mass: Optional[ArrayLike] = None, **kwargs: Dict[st
     # points = args[0]
     name = kwargs.pop('name', None)
     caching = False if name is None else kwargs.pop('caching', False)
-    # return return_enbid(run_enbid(write_for_enbid(points, name=name, caching=caching), caching=caching, **kwargs))
     return return_enbid(run_enbid(points, mass=mass, name=name, caching=caching, **kwargs))
 
 
