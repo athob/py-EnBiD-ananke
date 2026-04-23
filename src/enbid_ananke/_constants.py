@@ -27,6 +27,8 @@ __all__ = ['NAME', 'LOG_DIR', 'SRC_DIR', 'ENBID_URL', 'CONSTANTS', 'SNAPSHOT_FIL
 ENBID2 = 'Enbid-2.0'
 ENBID_URL = 'https://sourceforge.net/projects/enbid/files/latest/download'
 ENBID_EXEC = 'Enbid'
+TAG_3D = "3d"
+# TAG_6D = "6d"
 LOG_DIR = 'log'
 SRC_DIR = 'src'
 
@@ -41,6 +43,8 @@ HASH_ENCODING = 'ascii'
 class Constants(metaclass=Singleton):
     enbid2: str          = ENBID2
     enbid_exec: str      = ENBID_EXEC
+    suffix_3d: str          = f".{TAG_3D}"
+    # suffix_6d: str          = f".{TAG_6D}"
     _enbid3d: pathlib.Path = None
     enbid_paramfile: str = ENBID_PARAMFILE
 
@@ -53,11 +57,22 @@ class Constants(metaclass=Singleton):
         if isinstance(self._enbid3d, pathlib.Path):
             return self._enbid3d
         else:
-            return self.enbid_cpp / self.enbid_exec
+            return (self.enbid_cpp / self.enbid_exec).with_suffix(self.suffix_3d)
     
     @enbid3d.setter
     def enbid3d(self, path: pathlib.Path):
         self._enbid3d = path
+
+    # @property
+    # def enbid6d(self):
+    #     if isinstance(self._enbid6d, pathlib.Path):
+    #         return self._enbid6d
+    #     else:
+    #         return (self.enbid_cpp / self.enbid_exec).with_suffix(self.suffix_6d)
+    
+    # @enbid6d.setter
+    # def enbid6d(self, path: pathlib.Path):
+    #     self._enbid6d = path
 
     @property
     def usedvalues(self):
