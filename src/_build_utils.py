@@ -113,10 +113,12 @@ def download_enbid(enbid_dir):
 def configure_enbid(enbid_dir):
     makefile = enbid_dir / 'src' / 'Makefile'
     for line in fileinput.input(makefile, inplace=True):
-        if bool(re.match(r".*OPT1.*=", line)):
-            line = re.sub(r'.*OPT1',  '#OPT1', line)
+        if bool(re.match(r".*OPT1.*=", line)):  # catch line with warning flag to comment it
+            line = re.sub(r'.*OPT1', '#OPT1', line)
         if bool(re.match(r".*OPT2.*=", line)):  # TODO have both 3D and 6D version separately available
-            line = re.sub(r'.*OPT2',  '{}OPT2'.format('' if re.match(r".*-DDIM3", line) else '#'), line)
+            line = re.sub(r'.*OPT2', '{}OPT2'.format('' if re.match(r".*-DDIM3", line) else '#'), line)
+        if bool(re.match(r"EXEC\s*=", line)):  # catch line that defines the executable name to modify it
+            line = re.sub(re.split(r"EXEC\s*=", line)[1].strip(), CONSTANTS.enbid3d.name, line)
         print(line, end='')
 
 
