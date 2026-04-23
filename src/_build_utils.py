@@ -110,23 +110,23 @@ def download_enbid(enbid_dir):
         raise CompileError(str(e) + "\nError downloading Enbid, aborting...\n")
 
 
-def configure_enbid(enbid_dir):
+def configure_enbid(enbid_dir, enbid_exec = CONSTANTS.enbid3d):
     makefile = enbid_dir / 'src' / 'Makefile'
     for line in fileinput.input(makefile, inplace=True):
         if bool(re.match(r".*OPT1.*=", line)):  # catch line with warning flag to comment it
             line = re.sub(r'.*OPT1', '#OPT1', line)
-        if bool(re.match(r".*OPT2.*=", line)):  # TODO have both 3D and 6D version separately available
-            line = re.sub(r'.*OPT2', '{}OPT2'.format('' if re.match(r".*-DDIM3", line) else '#'), line)
-        if bool(re.match(r"EXEC\s*=", line)):  # catch line that defines the executable name to modify it
-            line = re.sub(re.split(r"EXEC\s*=", line)[1].strip(), CONSTANTS.enbid3d.name, line)
+        if bool(re.match(r".*OPT2.*=", line)):  # catch lines with dimension flags and keep the right uncommented while commenting the others
+            line = re.sub(r'.*OPT2', '{}OPT2'.format('' if re.match(rf".*-DDIM{re.findall(r'.(.*)d', enbid_exec.suffix)}", line) else '#'), line)
+        if bool(re.match(r"EXEC\s*=", line)):  # catch line that defines the executable name to modify it accordingly
+            line = re.sub(re.split(r"EXEC\s*=", line)[1].strip(), enbid_exec.name, line)
         print(line, end='')
 
 
-def make_enbid(enbid_dir):
-    with (ROOT_DIR / LOG_DIR / 'Enbid-make.log').open('w') as f:
+def make_enbid(enbid_dir, enbid_exec = CONSTANTS.enbid3d):
+    with (ROOT_DIR / LOG_DIR / f'Enbid{enbid_exec.suffix.replace(".","")}-make.log').open('w') as f:
         result = subprocess.call("make", cwd=enbid_dir / 'src', stdout=f, stderr=f)
         result = subprocess.call(["make", "clean"], cwd=enbid_dir / 'src', stdout=f, stderr=f)
-    if result != 0 or not (enbid_dir / CONSTANTS.enbid3d.name).is_file():
+    if result != 0 or not (enbid_dir / enbid_exec.name).is_file():
         raise CompileError(f"Enbid compilation failed (check {pathlib.Path('.', LOG_DIR, 'Enbid-make.log')})")
 
 
