@@ -130,21 +130,21 @@ def make_enbid(enbid_dir, enbid_exec = CONSTANTS.enbid3d):
         raise CompileError(f"Enbid compilation failed (check {pathlib.Path('.', LOG_DIR, 'Enbid-make.log')})")
 
 
-def compile_enbid(enbid_dir):
+def compile_enbid(enbid_dir, enbid_exec = CONSTANTS.enbid3d):
     enbid_dir = pathlib.Path(enbid_dir).resolve()
-    say("\nCompiling Enbid")
+    say(f"\nCompiling Enbid{enbid_exec.suffix.replace(".","")}")
     (ROOT_DIR / LOG_DIR).mkdir(parents=True, exist_ok=True)
     say("\n\tConfiguring")
-    configure_enbid(enbid_dir)
+    configure_enbid(enbid_dir, enbid_exec=enbid_exec)
     say("\n\tRunning make")
-    make_enbid(enbid_dir)
+    make_enbid(enbid_dir, enbid_exec=enbid_exec)
     say("\n")
 
 
 def download_and_compile_enbid():
     enbid_dir = ROOT_DIR / SRC_DIR / NAME / CONSTANTS.enbid2
     download_enbid(enbid_dir)
-    compile_enbid(enbid_dir)
+    compile_enbid(enbid_dir, enbid_exec = CONSTANTS.enbid3d)
 
 
 def make_package_data():
