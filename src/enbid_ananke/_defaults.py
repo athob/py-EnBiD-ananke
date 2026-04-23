@@ -28,6 +28,7 @@ DEFAULT_NGB = 64
 DEFAULT_FOR_PARAMFILE = {
     TTAGS.fname: TO_ENBID_FILENAME,
     # TTAGS.des_num_ngb: DEFAULT_NGB,
+    TTAGS.snapshot_filebase: '_out',
     TTAGS.spatial_scale: 1.0,
     TTAGS.part_boundary: 7,
     TTAGS.node_splitting_criterion: 1,

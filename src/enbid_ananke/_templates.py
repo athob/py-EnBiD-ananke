@@ -28,6 +28,7 @@ class TemplateTags(metaclass=Singleton):
     fname: str                    = 'fname'
     ic_format: str                = 'ic_format'
     des_num_ngb: str              = 'des_num_ngb'
+    snapshot_filebase: str        = 'snapshot_filebase'
     spatial_scale: str            = 'spatial_scale'
     part_boundary: str            = 'part_boundary'
     node_splitting_criterion: str = 'node_splitting_criterion'
@@ -50,7 +51,7 @@ InitCondFile     ${{{TTAGS.fname}}}
 
 %-------------------------------------------------------
 ICFormat                  ${{{TTAGS.ic_format}}}     % O)ASCII 1)Gadget 2)User defined
-SnapshotFileBase        _d3n${{{TTAGS.des_num_ngb}}}
+SnapshotFileBase        ${{{TTAGS.snapshot_filebase}}}
 
 %-------------------------------------------------------
 % Tree related options

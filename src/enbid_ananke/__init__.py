@@ -351,6 +351,7 @@ def run_enbid(points: ArrayLike, mass: Optional[ArrayLike] = None,
     # Determine ICFormat based on whether mass is provided
     ic_format = 1 if mass is not None else 0
     kwargs[TTAGS.ic_format] = ic_format
+    kwargs[TTAGS.snapshot_filebase] = f"_d3n{ngb}"
     path = write_for_enbid(points, mass=mass, name=name, caching=caching)
     kwargs[TTAGS.des_num_ngb] = ngb
     kwargs[TTAGS.des_num_ngb_a] = kwargs.pop('ngb_a', ngb)
