@@ -363,7 +363,7 @@ def run_enbid(points: ArrayLike, mass: Optional[ArrayLike] = None,
          else True)                              # otherwise proceed if both don't exist
         if caching else True):                   # -> proceed anyway if caching is False
         paramfile.write_text(paramfile_text)
-        execute([CONSTANTS.enbid, CONSTANTS.enbid_paramfile], verbose=verbose, cwd=path)
+        execute([CONSTANTS.enbid3d, CONSTANTS.enbid_paramfile], verbose=verbose, cwd=path)
     return path
 
 run_enbid.__doc__ = run_enbid.__doc__.format(DEFAULT_NGB=DEFAULT_NGB)

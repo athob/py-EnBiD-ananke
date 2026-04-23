@@ -23,7 +23,7 @@ from .utils import in_tmp_wd, make_enbid_test_exec, list_stdout
 
 @in_tmp_wd
 def test_run_enbid():
-    CONSTANTS.enbid = pathlib.Path("./enbid_tester").absolute()
+    CONSTANTS.enbid3d = pathlib.Path("./enbid_tester").absolute()
     enbid_exec = make_enbid_test_exec()
     with list_stdout() as L:
         run_enbid(np.empty((0, 3)), name='test', verbose=True)

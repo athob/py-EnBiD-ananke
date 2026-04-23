@@ -41,7 +41,7 @@ HASH_ENCODING = 'ascii'
 class Constants(metaclass=Singleton):
     enbid2: str          = ENBID2
     enbid_exec: str      = ENBID_EXEC
-    _enbid: pathlib.Path = None
+    _enbid3d: pathlib.Path = None
     enbid_paramfile: str = ENBID_PARAMFILE
 
     @property
@@ -49,15 +49,15 @@ class Constants(metaclass=Singleton):
         return pathlib.Path(__file__).resolve().parent / self.enbid2
     
     @property
-    def enbid(self):
-        if isinstance(self._enbid, pathlib.Path):
-            return self._enbid
+    def enbid3d(self):
+        if isinstance(self._enbid3d, pathlib.Path):
+            return self._enbid3d
         else:
             return self.enbid_cpp / self.enbid_exec
     
-    @enbid.setter
-    def enbid(self, path: pathlib.Path):
-        self._enbid = path
+    @enbid3d.setter
+    def enbid3d(self, path: pathlib.Path):
+        self._enbid3d = path
 
     @property
     def usedvalues(self):

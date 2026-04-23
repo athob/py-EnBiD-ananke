@@ -31,9 +31,9 @@ echo $1
 """
 
 def make_enbid_test_exec():
-    CONSTANTS.enbid.write_text(enbid_test_exec_script)
-    CONSTANTS.enbid.chmod(CONSTANTS.enbid.stat().st_mode | stat.S_IEXEC)
-    return CONSTANTS.enbid
+    CONSTANTS.enbid3d.write_text(enbid_test_exec_script)
+    CONSTANTS.enbid3d.chmod(CONSTANTS.enbid3d.stat().st_mode | stat.S_IEXEC)
+    return CONSTANTS.enbid3d
 
 def simulate_enbid_output(name, tag='_d3n64', values=[]):
     path = pathlib.Path(name)
