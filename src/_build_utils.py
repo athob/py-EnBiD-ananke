@@ -122,7 +122,8 @@ def configure_enbid(enbid_dir):
 
 def make_enbid(enbid_dir):
     with (ROOT_DIR / LOG_DIR / 'Enbid-make.log').open('w') as f:
-        result = subprocess.call(f"make", cwd=enbid_dir / 'src', stdout=f, stderr=f)
+        result = subprocess.call("make", cwd=enbid_dir / 'src', stdout=f, stderr=f)
+        result = subprocess.call(["make", "clean"], cwd=enbid_dir / 'src', stdout=f, stderr=f)
     if result != 0 or not (enbid_dir / 'Enbid').is_file():
         raise CompileError(f"Enbid compilation failed (check {pathlib.Path('.', LOG_DIR, 'Enbid-make.log')})")
 
