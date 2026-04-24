@@ -155,13 +155,16 @@ def write_for_enbid(points: ArrayLike,
                     name: Optional[Union[str, pathlib.Path]] = None,
                     caching: bool = False) -> pathlib.Path:
     """
-        Writes the input files for EnBiD given the input particles coordinates.
-        The coordinate frame is automatically centered on the most clustered structure
-        to improve numerical stability.
+        Writes the input files for EnBiD from 3D positions (and optional
+        3D velocities). If velocities are given, the combined input represents
+        6D phase-space data. The position frame is automatically centred on
+        the most clustered structure to improve numerical stability;
+        velocities are left unchanged.
 
         Call signature::
 
-            path = write_for_enbid(points, velocities=None, mass=None, name=None, caching=False)
+            path = write_for_enbid(points, velocities=None, mass=None,
+                                   name=None, caching=False)
         
         Parameters
         ----------
@@ -258,7 +261,9 @@ def run_enbid(points: ArrayLike,
               name: Optional[Union[str, pathlib.Path]] = None, ngb: int = DEFAULT_NGB,
               verbose: bool = True, caching: bool = False, **kwargs: Dict[str, Any]) -> pathlib.Path:
     """
-        Run EnBiD using input files in name.
+        Run the EnBiD kernel density estimator on the supplied particle data.
+        The appropriate pre-compiled EnBiD binary (3D or 6D) is selected
+        automatically based on whether ``velocities`` are provided.
 
         Call signature::
 
@@ -294,9 +299,10 @@ def run_enbid(points: ArrayLike,
             stdout. Default to True.
 
         caching : bool, optional
-            If True, check if EnBiD paramfile and usedvalues files already
-            exist, and ignore running if parameters from the previous run are
-            the same. Default to False.
+            If True, the input data is hashed and compared to a cached hash.
+            If the data (points, velocities, masses) are unchanged, the
+            existing parameter file and density estimates are reused.
+            Default to False.
         
         spatial_scale : float, optional
             Scaling between position and velocity space where the scaling goes
@@ -497,7 +503,12 @@ def enbid(points: ArrayLike,
           mass: Optional[ArrayLike] = None,
           **kwargs: Dict[str, Any]) -> NDArray:
     """
-        Returns kernel density estimates given a set of particle 3D coordinates.
+        Returns kernel density estimates for a set of particles.
+
+        If only 3D positions are given, the result is a 3D spatial density.
+        If 3D velocities are also provided, the estimate becomes a 6D
+        phase-space density.  When a `mass` array is given, the densities are
+        mass-weighted (mass density); otherwise they are number densities.
 
         Call signature::
 
@@ -537,7 +548,8 @@ def enbid(points: ArrayLike,
         Returns
         ----------
         rho : array_like
-            Array representing kernel density estimates for the input particles
+            Array of density values.  Units: mass density if `mass` is given,
+            number density otherwise.
     """
     # points = args[0]
     name = kwargs.pop('name', None)
