@@ -72,12 +72,12 @@ def __make_path_of_name(name : Optional[Union[str, pathlib.Path]] = None) -> pat
     return path
 
 
-def write_gadget_file(filename: pathlib.Path, pos: NDArray, mass: NDArray,
+def write_gadget_file(filename: pathlib.Path, pos: NDArray, mass: NDArray, vel: Optional[NDArray] = None,
                       boxsize: float = 0.0, time: float = 0.0, redshift: float = 0.0,
                       omega0: float = 0.0, omegalambda: float = 0.0, hubble: float = 0.7,
                       particle_type: int = 1) -> None:
     """
-    Write a GADGET-1 format snapshot file to serve as input for EnBiD (3D version).
+    Write a GADGET-1 format snapshot file to serve as input for EnBiD (3D or 6D).
 
     Parameters
     ----------
@@ -87,6 +87,8 @@ def write_gadget_file(filename: pathlib.Path, pos: NDArray, mass: NDArray,
         Particle positions (float32).
     mass : ndarray, shape (N,)
         Particle masses (float32).
+    vel : ndarray, shape (N, 3), optional
+        Particle velocities. If None, zero velocities are written.
     boxsize : float, optional
         Size of periodic box.
     time, redshift, omega0, omegalambda, hubble : float, optional
@@ -101,7 +103,13 @@ def write_gadget_file(filename: pathlib.Path, pos: NDArray, mass: NDArray,
     # Ensure correct data types
     pos = np.asarray(pos, dtype=np.float32)
     mass = np.asarray(mass, dtype=np.float32)
-    vel = np.zeros((N, 3), dtype=np.float32)      # dummy velocities
+    # vel = np.zeros((N, 3), dtype=np.float32)      # dummy velocities
+    if vel is None:
+        vel = np.zeros((N, 3), dtype=np.float32)      # dummy velocities
+    else:
+        vel = np.asarray(vel, dtype=np.float32)
+        if vel.shape[0] != N or vel.shape[1] != 3:
+            raise ValueError("vel must have shape (N, 3)")
     ids = np.arange(1, N+1, dtype=np.int32)       # dummy IDs (1-based)
 
     # Build header (256 bytes)
@@ -141,23 +149,29 @@ def write_gadget_file(filename: pathlib.Path, pos: NDArray, mass: NDArray,
         write_record(f, mass.ravel().tobytes())
 
 
-def write_for_enbid(points: ArrayLike, mass: Optional[ArrayLike] = None,
+def write_for_enbid(points: ArrayLike, 
+                    velocities: Optional[ArrayLike] = None,
+                    mass: Optional[ArrayLike] = None,
                     name: Optional[Union[str, pathlib.Path]] = None,
                     caching: bool = False) -> pathlib.Path:
     """
-        Writes the input files for EnBiD given the input particles 3D coordinates.
+        Writes the input files for EnBiD given the input particles coordinates.
         The coordinate frame is automatically centered on the most clustered structure
         to improve numerical stability.
 
         Call signature::
 
-            path = write_for_enbid(points, mass=None, name=None, caching=False)
+            path = write_for_enbid(points, velocities=None, mass=None, name=None, caching=False)
         
         Parameters
         ----------
         points : array_like
             Contains 3D coordinates of the input particles, must be of shape
             (N,3) for any given N integer.
+
+        velocities : array_like, optional
+            Particle velocities, shape (N, 3). If provided, EnBiD will run in 6D
+            phase-space mode.
 
         mass : array_like, optional
             Contains the mass of each particle. Must be a 1D array of length N.
@@ -182,8 +196,21 @@ def write_for_enbid(points: ArrayLike, mass: Optional[ArrayLike] = None,
     enbid_inputhashfile: pathlib.Path = enbid_inputfile.with_suffix(f".{HASH_EXT}")
     points: NDArray = np.asarray(points)
     mass_arr: Optional[NDArray] = np.asarray(mass) if mass is not None else None
-    # Compute hash including mass if present
+    vel_arr: Optional[NDArray] = np.asarray(velocities) if velocities is not None else None
+    # Validate shapes
+    if vel_arr is not None:
+        assert points.ndim == 2 and points.shape[-1] == 3, 'Points must be (N,3)'
+        assert vel_arr.ndim == 2 and vel_arr.shape[-1] == 3, 'Velocities must be (N,3)'
+        assert vel_arr.shape[0] == points.shape[0], 'Points and velocities must have same N'
+    else:
+        assert points.ndim == 2 and points.shape[-1] == 3, 'Points must be (N,3)'
+
+    if mass_arr is not None:
+        assert mass_arr.ndim == 1 and mass_arr.shape[0] == points.shape[0], 'Mass array length mismatch'
+    # Compute hash including mass and/or velocities  if present
     hash_input = points.tobytes()
+    if vel_arr is not None:
+        hash_input += vel_arr.tobytes()
     if mass_arr is not None:
         hash_input += mass_arr.tobytes()
     inputhash = bytes(hashlib.sha256(hash_input).hexdigest(), HASH_ENCODING)
@@ -209,18 +236,25 @@ def write_for_enbid(points: ArrayLike, mass: Optional[ArrayLike] = None,
             coordinates: NDArray = points
 
         if mass_arr is None:
-            # ASCII format
-            np.savetxt(enbid_inputfile, coordinates, delimiter=' ')
+            # ASCII format: write positions (and velocities if present)
+            if vel_arr is not None:
+                # 6 columns
+                combined = np.column_stack((coordinates, vel_arr))
+                np.savetxt(enbid_inputfile, combined, delimiter=' ')
+            else:
+                np.savetxt(enbid_inputfile, coordinates, delimiter=' ')
         else:
             # GADGET binary format
-            write_gadget_file(enbid_inputfile, coordinates, mass_arr)
+            write_gadget_file(enbid_inputfile, coordinates, mass_arr,
+                              vel=vel_arr if vel_arr is not None else None)
 
         enbid_inputhashfile.write_bytes(inputhash)
     
     return path
 
 
-def run_enbid(points: ArrayLike, mass: Optional[ArrayLike] = None,
+def run_enbid(points: ArrayLike,
+              velocities: Optional[ArrayLike] = None, mass: Optional[ArrayLike] = None,
               name: Optional[Union[str, pathlib.Path]] = None, ngb: int = DEFAULT_NGB,
               verbose: bool = True, caching: bool = False, **kwargs: Dict[str, Any]) -> pathlib.Path:
     """
@@ -228,7 +262,8 @@ def run_enbid(points: ArrayLike, mass: Optional[ArrayLike] = None,
 
         Call signature::
 
-            path = run_enbid(points, mass=None, name=None, ngb=64, verbose=True,
+            path = run_enbid(points, velocities=None, mass=None,
+                             name=None, ngb=64, verbose=True,
                              caching=False, **kwargs)
         
         Parameters
@@ -236,6 +271,9 @@ def run_enbid(points: ArrayLike, mass: Optional[ArrayLike] = None,
         points : array_like
             Contains 3D coordinates of the input particles, must be of shape
             (N,3) for any given N integer.
+
+        velocities : array_like, optional
+            Particle velocities, shape (N, 3). If provided, EnBiD runs in 6D mode.
 
         mass : array_like, optional
             Contains the mass of each particle. Must be a 1D array of length N.
@@ -351,8 +389,11 @@ def run_enbid(points: ArrayLike, mass: Optional[ArrayLike] = None,
     # Determine ICFormat based on whether mass is provided
     ic_format = 1 if mass is not None else 0
     kwargs[TTAGS.ic_format] = ic_format
-    kwargs[TTAGS.snapshot_filebase] = f"_d3n{ngb}"
-    path = write_for_enbid(points, mass=mass, name=name, caching=caching)
+    # Determine dimension tag for output file suffix
+    dim_tag = 'd6' if velocities is not None else 'd3'
+    kwargs[TTAGS.snapshot_filebase] = f"_{dim_tag}n{ngb}"
+    # Write input files
+    path = write_for_enbid(points, velocities=velocities, mass=mass, name=name, caching=caching)
     kwargs[TTAGS.des_num_ngb] = ngb
     kwargs[TTAGS.des_num_ngb_a] = kwargs.pop('ngb_a', ngb)
     paramfile_text: str = ENBID_PARAMFILE_TEMPLATE.substitute(DEFAULT_FOR_PARAMFILE, **kwargs)
@@ -364,7 +405,9 @@ def run_enbid(points: ArrayLike, mass: Optional[ArrayLike] = None,
          else True)                              # otherwise proceed if both don't exist
         if caching else True):                   # -> proceed anyway if caching is False
         paramfile.write_text(paramfile_text)
-        execute([CONSTANTS.enbid3d, CONSTANTS.enbid_paramfile], verbose=verbose, cwd=path)
+        # Choose the right executable
+        enbid_exec = CONSTANTS.enbid6d if velocities is not None else CONSTANTS.enbid3d
+        execute([enbid_exec, CONSTANTS.enbid_paramfile], verbose=verbose, cwd=path)
     return path
 
 run_enbid.__doc__ = run_enbid.__doc__.format(DEFAULT_NGB=DEFAULT_NGB)
@@ -449,19 +492,26 @@ def return_enbid(name: Optional[Union[str, pathlib.Path]] = None) -> NDArray:
     return rho
 
 
-def enbid(points: ArrayLike, mass: Optional[ArrayLike] = None, **kwargs: Dict[str, Any]) -> NDArray:
+def enbid(points: ArrayLike,
+          velocities: Optional[ArrayLike] = None,
+          mass: Optional[ArrayLike] = None,
+          **kwargs: Dict[str, Any]) -> NDArray:
     """
         Returns kernel density estimates given a set of particle 3D coordinates.
 
         Call signature::
 
-            rho = enbid(points, mass=None, name=None, **kwargs)
+            rho = enbid(points, velocities=None, mass=None, name=None, **kwargs)
         
         Parameters
         ----------
         points : array_like
             Contains 3D coordinates of the input particles, must be of shape
             (N,3) for any given N integer.
+
+        velocities : array_like, optional
+            Particle velocities, shape (N, 3). If provided, EnBiD runs in 6D
+            phase-space mode.
 
         mass : array_like, optional
             Contains the mass of each particle. Must be a 1D array of length N.
@@ -492,7 +542,7 @@ def enbid(points: ArrayLike, mass: Optional[ArrayLike] = None, **kwargs: Dict[st
     # points = args[0]
     name = kwargs.pop('name', None)
     caching = False if name is None else kwargs.pop('caching', False)
-    return return_enbid(run_enbid(points, mass=mass, name=name, caching=caching, **kwargs))
+    return return_enbid(run_enbid(points, velocities=velocities, mass=mass, name=name, caching=caching, **kwargs))
 
 
 if __name__ == '__main__':

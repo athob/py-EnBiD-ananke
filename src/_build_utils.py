@@ -145,6 +145,7 @@ def download_and_compile_enbid():
     enbid_dir = ROOT_DIR / SRC_DIR / NAME / CONSTANTS.enbid2
     download_enbid(enbid_dir)
     compile_enbid(enbid_dir, enbid_exec = CONSTANTS.enbid3d)
+    compile_enbid(enbid_dir, enbid_exec = CONSTANTS.enbid6d)
 
 
 def make_package_data():
