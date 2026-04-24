@@ -132,7 +132,7 @@ def make_enbid(enbid_dir, enbid_exec = CONSTANTS.enbid3d):
 
 def compile_enbid(enbid_dir, enbid_exec = CONSTANTS.enbid3d):
     enbid_dir = pathlib.Path(enbid_dir).resolve()
-    say(f"\nCompiling Enbid{enbid_exec.suffix.replace(".","")}")
+    say(f"\nCompiling Enbid{enbid_exec.suffix.replace('.','')}")
     (ROOT_DIR / LOG_DIR).mkdir(parents=True, exist_ok=True)
     say("\n\tConfiguring")
     configure_enbid(enbid_dir, enbid_exec=enbid_exec)
