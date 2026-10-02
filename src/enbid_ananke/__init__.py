@@ -72,6 +72,38 @@ def __make_path_of_name(name : Optional[Union[str, pathlib.Path]] = None) -> pat
     return path
 
 
+def __compute_input_hash(points: NDArray,
+                         velocities: Optional[NDArray] = None,
+                         mass: Optional[NDArray] = None) -> str:
+    """
+    Compute the SHA-256 hex digest of the input data.
+
+    The digest identifies a unique (points, velocities, mass) triple and
+    is used to name a per-input subfolder so that different inputs no
+    longer overwrite each other's files.
+
+    Parameters
+    ----------
+    points : ndarray
+        Particle positions, shape (N, 3).
+    velocities : ndarray, optional
+        Particle velocities, shape (N, 3).
+    mass : ndarray, optional
+        Particle masses, shape (N,).
+
+    Returns
+    -------
+    digest : str
+        Hexadecimal SHA-256 digest of the concatenated input arrays.
+    """
+    hash_input = points.tobytes()
+    if velocities is not None:
+        hash_input += velocities.tobytes()
+    if mass is not None:
+        hash_input += mass.tobytes()
+    return hashlib.sha256(hash_input).hexdigest()
+
+
 def write_gadget_file(filename: pathlib.Path, pos: NDArray, mass: NDArray, vel: Optional[NDArray] = None,
                       boxsize: float = 0.0, time: float = 0.0, redshift: float = 0.0,
                       omega0: float = 0.0, omegalambda: float = 0.0, hubble: float = 0.7,
@@ -161,11 +193,17 @@ def write_for_enbid(points: ArrayLike,
         the most clustered structure to improve numerical stability;
         velocities are left unchanged.
 
+        Files are written inside a subfolder of ``name`` whose name is the
+        first ``HASH_PREFIX_LEN`` hex characters of the SHA-256 digest of the
+        input data. A companion ``.hash`` file is written alongside the input
+        file and is used by the caching logic to detect whether the input
+        has changed since the last run.
+
         Call signature::
 
             path = write_for_enbid(points, velocities=None, mass=None,
                                    name=None, caching=False)
-        
+
         Parameters
         ----------
         points : array_like
@@ -183,20 +221,20 @@ def write_for_enbid(points: ArrayLike,
             is written and unit masses are assumed.
 
         name : string, optional
-            Name of folder where to place EnBiD input files. Default to None.
-        
+            Root folder inside which the per-input subfolder is created.
+            Default to None.
+
         caching : bool, optional
-            If True, check if EnBiD input file already exists and ignore
-            writing if it does. Default to False.
-        
+            If True, the input file and its companion ``.hash`` file are only
+            rewritten when the freshly computed digest does not match the
+            stored one. Default to False.
+
         Returns
         ----------
         path : pathlib.Path
-            Path of folder where EnBiD input files are located.
+            Path of the per-input subfolder where EnBiD input files are
+            located.
     """
-    path: pathlib.Path = __make_path_of_name(name)
-    enbid_inputfile: pathlib.Path = path / DEFAULT_FOR_PARAMFILE[TTAGS.fname]
-    enbid_inputhashfile: pathlib.Path = enbid_inputfile.with_suffix(f".{HASH_EXT}")
     points: NDArray = np.asarray(points)
     mass_arr: Optional[NDArray] = np.asarray(mass) if mass is not None else None
     vel_arr: Optional[NDArray] = np.asarray(velocities) if velocities is not None else None
@@ -207,25 +245,22 @@ def write_for_enbid(points: ArrayLike,
         assert vel_arr.shape[0] == points.shape[0], 'Points and velocities must have same N'
     else:
         assert points.ndim == 2 and points.shape[-1] == 3, 'Points must be (N,3)'
-
     if mass_arr is not None:
         assert mass_arr.ndim == 1 and mass_arr.shape[0] == points.shape[0], 'Mass array length mismatch'
-    # Compute hash including mass and/or velocities  if present
-    hash_input = points.tobytes()
-    if vel_arr is not None:
-        hash_input += vel_arr.tobytes()
-    if mass_arr is not None:
-        hash_input += mass_arr.tobytes()
-    inputhash = bytes(hashlib.sha256(hash_input).hexdigest(), HASH_ENCODING)
+    # Compute hash including mass and/or velocities if present and derive the subfolder
+    inputhash: str = __compute_input_hash(points, vel_arr, mass_arr)
+    hash_short: str = inputhash[:HASH_PREFIX_LEN]
+    root_path: pathlib.Path = __make_path_of_name(name)
+    path: pathlib.Path = __make_path_of_name(root_path / hash_short)
+    enbid_inputfile: pathlib.Path = path / DEFAULT_FOR_PARAMFILE[TTAGS.fname]
+    enbid_inputhashfile: pathlib.Path = enbid_inputfile.with_suffix(f".{HASH_EXT}")
+    inputhash_bytes: bytes = bytes(inputhash, HASH_ENCODING)
     # Check if we need to write the file
-    if ((enbid_inputhashfile.read_bytes() != inputhash # proceed if hashes don't match,
+    if ((enbid_inputhashfile.read_bytes() != inputhash_bytes # proceed if hashes don't match,
          if (enbid_inputfile.exists() and              # only if enbid_inputfile exists,
              enbid_inputhashfile.exists())             # and enbid_inputhashfile exists,
          else True)                                    # otherwise proceed if both don't exist
         if caching else True):                         # -> proceed anyway if caching is False
-        assert points.ndim == 2 and points.shape[-1] == 3, 'Array-like input must be of shape (X, 3)'
-        if mass_arr is not None:
-            assert mass_arr.ndim == 1 and mass_arr.shape[0] == points.shape[0], 'mass must be 1D array with same length as points'
         if points.shape[0]:
             # center frame on most clustered structure using NN distances
             NN = nghb.NearestNeighbors(n_neighbors=2)
@@ -233,7 +268,6 @@ def write_for_enbid(points: ArrayLike,
             NN_distances: NDArray = NN.kneighbors(points)[0][:,1]
             most_clustered_structure: NDArray = points[NN_distances < np.median(NN_distances)]
             most_clustered_structure_center: NDArray = np.average(most_clustered_structure, axis=0)
-            #
             coordinates: NDArray = points - most_clustered_structure_center
         else:
             coordinates: NDArray = points
@@ -251,7 +285,7 @@ def write_for_enbid(points: ArrayLike,
             write_gadget_file(enbid_inputfile, coordinates, mass_arr,
                               vel=vel_arr if vel_arr is not None else None)
 
-        enbid_inputhashfile.write_bytes(inputhash)
+        enbid_inputhashfile.write_bytes(inputhash_bytes)
     
     return path
 

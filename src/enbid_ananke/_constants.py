@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from ._name import *
 from ._builtin_utils import Singleton
 
-__all__ = ['NAME', 'LOG_DIR', 'SRC_DIR', 'ENBID_URL', 'CONSTANTS', 'SNAPSHOT_FILEBASE', 'ENBID_OUT_EXT', 'HASH_EXT', 'HASH_ENCODING']
+__all__ = ['NAME', 'LOG_DIR', 'SRC_DIR', 'ENBID_URL', 'CONSTANTS', 'SNAPSHOT_FILEBASE', 'ENBID_OUT_EXT', 'HASH_EXT', 'HASH_ENCODING', 'HASH_PREFIX_LEN']
 
 ENBID2 = 'Enbid-2.0'
 ENBID_URL = 'https://sourceforge.net/projects/enbid/files/latest/download'
@@ -38,6 +38,7 @@ SNAPSHOT_FILEBASE = 'SnapshotFileBase'
 ENBID_OUT_EXT = 'est'
 HASH_EXT = 'hash'
 HASH_ENCODING = 'ascii'
+HASH_PREFIX_LEN = 16   # number of hex chars to keep from the SHA-256 digest
 
 @dataclass()
 class Constants(metaclass=Singleton):
