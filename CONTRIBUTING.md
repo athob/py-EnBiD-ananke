@@ -86,7 +86,8 @@ Python way ([PEP 440](https://peps.python.org/pep-0440/)): `v0.3.4a1`,
 ## Releasing (maintainer)
 
 Pushing a tag that starts with `v` runs
-[`.github/workflows/pypi.yml`](.github/workflows/pypi.yml). It builds the sdist and
+[`.github/workflows/cd.yml`](.github/workflows/cd.yml) (the **CD**
+workflow). It builds the sdist and
 the wheel inside a manylinux2014 container, publishes them to TestPyPI, and --
 for a full release only (`v0.3.4`) -- to PyPI. Pre-release tags (`a`, `b`, `rc`,
 `dev`) go to TestPyPI only, and the `a`, `b` and `rc` ones first wait for the
