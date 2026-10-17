@@ -55,8 +55,8 @@ pytest src
 
 ## The automatic checks (CI)
 
-Every push to a branch other than `main` and `stable` runs the **CI/CD**
-workflow ([`.github/workflows/main.yml`](.github/workflows/main.yml)). For each
+Every push to a branch other than `main` and `stable` runs the **CI**
+workflow ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)). For each
 Python version from 3.8 to 3.14 it installs the package, lints it with flake8,
 and runs `pytest src`. The lint step only fails on the serious findings
 (syntax errors and undefined names); the style warnings are listed for
@@ -90,7 +90,7 @@ Pushing a tag that starts with `v` runs
 the wheel inside a manylinux2014 container, publishes them to TestPyPI, and --
 for a full release only (`v0.3.4`) -- to PyPI. Pre-release tags (`a`, `b`, `rc`,
 `dev`) go to TestPyPI only, and the `a`, `b` and `rc` ones first wait for the
-CI/CD workflow to pass on the tagged commit. Publishing uses PyPI's trusted
+CI workflow to pass on the tagged commit. Publishing uses PyPI's trusted
 publishing, through the `release` environment: no API token is stored anywhere.
 
 ## Questions and bug reports
