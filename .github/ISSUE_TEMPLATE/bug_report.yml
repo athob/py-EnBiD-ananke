@@ -1,0 +1,58 @@
+name: Bug report
+description: Something does not work, or does the wrong thing
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Code to reproduce it
+      description: The smallest call that shows the problem, with the arguments you used.
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output or traceback
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: enbid_ananke version
+      description: Output of `pip show enbid-ananke`
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Python version and operating system
+      placeholder: "Python 3.11, Linux (cluster)"
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How was it installed?
+      options:
+        - "pip install enbid_ananke (PyPI)"
+        - "pip install git+https://github.com/athob/py-EnBiD-ananke"
+        - "pip install . from a clone"
+        - "As a dependency of py-ananke"
+    validations:
+      required: true
+  - type: dropdown
+    id: context
+    attributes:
+      label: How are you using it?
+      options:
+        - "Directly"
+        - "Through py-ananke"
+        - "Not sure"
+    validations:
+      required: true
