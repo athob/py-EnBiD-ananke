@@ -55,6 +55,9 @@ ruff check .      # must pass
 pytest src
 ```
 
+To have ruff run on every commit by itself, install the optional
+[pre-commit](https://pre-commit.com/) hook: `pip install pre-commit && pre-commit install`.
+
 ## The automatic checks (CI)
 
 Every push to a branch other than `main` and `stable` runs the **CI**
