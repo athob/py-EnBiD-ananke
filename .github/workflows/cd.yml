@@ -8,6 +8,9 @@ on:
     tags:
       - 'v*'               # Trigger only when a tag starting with 'v' is pushed
 
+permissions:
+  contents: read
+
 env:
   PACKAGE_NAME: enbid-ananke
 
@@ -47,6 +50,10 @@ jobs:
     name: Build distribution 📦
     needs: meta
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      actions: read    # to look up the CI run of the tagged commit
 
     steps:
     - name: Checkout code
