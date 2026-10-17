@@ -1,0 +1,79 @@
+cff-version: "1.2.0"
+message: >-
+  If you use this software, please cite the py-ananke article in the Journal of
+  Open Source Software, and also EnBiD itself (Sharma & Steinmetz 2011).
+type: software
+title: "py-EnBiD-ananke: a python wrapper for EnBiD"
+abstract: >-
+  Python wrapper for EnBiD (Sharma & Steinmetz 2011), to be used by py-ananke.
+authors:
+  - family-names: Thob
+    given-names: Adrien C. R.
+    orcid: "https://orcid.org/0000-0001-7928-1973"
+    affiliation: "University of Pennsylvania"
+repository-code: "https://github.com/athob/py-EnBiD-ananke"
+url: "https://py-enbid-ananke.readthedocs.io"
+license: GPL-2.0-or-later
+# The Zenodo DOI that stands for all versions of this software; each release
+# also has a DOI of its own, which resolves from the release's Zenodo record.
+doi: 10.5281/zenodo.13937082
+keywords:
+  - EnBiD
+  - py-ananke
+  - density estimation
+  - phase space
+  - astrophysics
+preferred-citation:
+  type: article
+  title: >-
+    Generating synthetic star catalogs from simulated data for next-gen
+    observatories with py-ananke
+  authors:
+    - family-names: Thob
+      given-names: Adrien C. R.
+      orcid: "https://orcid.org/0000-0001-7928-1973"
+    - family-names: Sanderson
+      given-names: Robyn E.
+      orcid: "https://orcid.org/0000-0003-3939-3297"
+    - family-names: Eden
+      given-names: Andrew P.
+      orcid: "https://orcid.org/0009-0004-2146-4856"
+    - family-names: Nikakhtar
+      given-names: Farnik
+      orcid: "https://orcid.org/0000-0002-3641-4366"
+    - family-names: Panithanpaisal
+      given-names: Nondh
+      orcid: "https://orcid.org/0000-0001-5214-8822"
+    - family-names: Garavito-Camargo
+      given-names: Nicolás
+      orcid: "https://orcid.org/0000-0001-7107-1744"
+    - family-names: Sharma
+      given-names: Sanjib
+      orcid: "https://orcid.org/0000-0002-0920-809X"
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  volume: 9
+  issue: 102
+  start: 6234
+  year: 2024
+  date-published: "2024-10-23"
+  issn: 2475-9066
+  doi: 10.21105/joss.06234
+  url: "https://joss.theoj.org/papers/10.21105/joss.06234"
+references:
+  - type: software
+    title: "EnBiD: Fast Multi-dimensional Density Estimation"
+    authors:
+      - family-names: Sharma
+        given-names: Sanjib
+        orcid: "https://orcid.org/0000-0002-0920-809X"
+      - family-names: Steinmetz
+        given-names: Matthias
+    publisher:
+      name: Astrophysics Source Code Library
+    year: 2011
+    identifiers:
+      - type: other
+        value: "ascl:1109.012"
+    url: "https://ascl.net/1109.012"
