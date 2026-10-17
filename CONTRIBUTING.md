@@ -40,11 +40,13 @@ pip install .
 pip install pytest flake8
 ```
 
-`pip install .` builds the EnBiD executable and installs it with the package,
-so it needs a C++ toolchain, and Windows is not supported. The tests run
-against the installed package: run `pip install .` again after you change the
-code. The version is read from the git tags (see "Versioning" below), so work
-from a clone that has them: `git fetch --tags` if you cloned a fork.
+`pip install .` downloads the EnBiD source (from SourceForge), compiles it and
+installs the executable with the package, so it needs network access, `tar`,
+GNU make and g++, and Windows is not supported. The tests import the package
+straight from `src/` (they use relative imports), so once the install has worked
+your edits are picked up without installing again. The version is read from the
+git tags (see "Versioning" below), so work from a clone that has them:
+`git fetch --tags` if you cloned a fork.
 
 Before you push, run what CI runs:
 
