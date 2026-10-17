@@ -5,7 +5,7 @@
 #
 # This file is part of the py-EnBiD-ananke project,
 # <https://github.com/athob/py-EnBiD-ananke>,  which is licensed
-# under the GNU General Public License v2.0 (GPL-2.0).
+# under the GNU General Public License v2.0 or later (GPL-2.0-or-later).
 # 
 # The full copyright notice, including terms governing use, modification,
 # and redistribution, is contained in the files LICENSE and COPYRIGHT,
