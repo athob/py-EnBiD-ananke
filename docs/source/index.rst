@@ -12,5 +12,5 @@ py-EnBiD-ananke documentation
 
    Installation instructions <installation.rst>
    intro.rst
-   testing_EnBiD.ipynb
+   testing_enbid_ananke.ipynb
    reference.rst
