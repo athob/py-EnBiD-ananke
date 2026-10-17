@@ -37,7 +37,7 @@ cd py-EnBiD-ananke
 git switch develop
 python -m venv .venv && source .venv/bin/activate      # or a conda environment
 pip install .
-pip install pytest flake8
+pip install pytest ruff
 ```
 
 `pip install .` downloads the EnBiD source (from SourceForge), compiles it and
@@ -51,7 +51,7 @@ git tags (see "Versioning" below), so work from a clone that has them:
 Before you push, run what CI runs:
 
 ```bash
-flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics   # must pass
+ruff check .      # must pass
 pytest src
 ```
 
@@ -59,10 +59,10 @@ pytest src
 
 Every push to a branch other than `main` and `stable` runs the **CI**
 workflow ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)). For each
-Python version from 3.8 to 3.14 it installs the package, lints it with flake8,
-and runs `pytest src`. The lint step only fails on the serious findings
-(syntax errors and undefined names); the style warnings are listed for
-information.
+Python version from 3.8 to 3.14 it installs the package and runs `pytest src`,
+and a separate job lints the code with [ruff](https://docs.astral.sh/ruff/). The
+lint only fails on the serious findings (syntax errors and undefined names,
+selected in `pyproject.toml`); the style warnings are listed for information.
 
 If CI fails on one Python version only, it is usually a real incompatibility
 rather than bad luck.
