@@ -91,13 +91,25 @@ Python way ([PEP 440](https://peps.python.org/pep-0440/)): `v0.3.4a1`,
 ## Releasing (maintainer)
 
 Pushing a tag that starts with `v` runs
-[`.github/workflows/cd.yml`](.github/workflows/cd.yml) (the **CD**
-workflow). It builds the sdist and
-the wheel inside a manylinux2014 container, publishes them to TestPyPI, and --
-for a full release only (`v0.3.4`) -- to PyPI. Pre-release tags (`a`, `b`, `rc`,
-`dev`) go to TestPyPI only, and the `a`, `b` and `rc` ones first wait for the
-CI workflow to pass on the tagged commit. Publishing uses PyPI's trusted
-publishing, through the `release` environment: no API token is stored anywhere.
+[`.github/workflows/cd.yml`](.github/workflows/cd.yml) (the **CD** workflow). It
+builds the sdist and the wheel inside a manylinux2014 container and publishes
+them. Where they go depends on the tag:
+
+| Tag                                   | Kind        | Published to                                     |
+|---------------------------------------|-------------|--------------------------------------------------|
+| `v0.3.4`, `v0.3.4.post1`              | release     | TestPyPI, then PyPI                              |
+| `v0.3.4a1`, `v0.3.4b1`, `v0.3.4rc0`   | pre-release | TestPyPI only, once CI has passed on the commit  |
+| `v0.3.4.dev0`, `v0.3.4rc0.dev1`       | development | TestPyPI only, straight away                     |
+
+After the `v` the tag has to be a plain [PEP 440](https://peps.python.org/pep-0440/)
+version: the first job of the workflow checks it and stops on anything else
+(`v0.3.4-test`, `v0.3.4dev1`, ...), so that nothing that is not a clean release can
+reach PyPI. Development tags are for trying the pipeline out. TestPyPI refuses a
+file name it has already seen, even after deleting it, so every try needs a new
+number (`.dev1`, `.dev2`, ...).
+
+Publishing uses PyPI's trusted publishing, through the `release` environment: no
+API token is stored anywhere.
 
 ## Questions and bug reports
 
