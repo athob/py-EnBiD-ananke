@@ -65,7 +65,8 @@ every push to a branch other than `main` and `stable`, on pull requests from for
 into `develop`, every Monday (to notice new releases of the dependencies, or
 trouble downloading EnBiD, before anyone else does) and on demand from the Actions
 tab. For each
-Python version from 3.8 to 3.14 it installs the package and runs `pytest src`,
+Python version from 3.8 to 3.14 it installs the package and runs `pytest src`
+(the Python 3.12 run also reports the test coverage, in the run's summary),
 and a separate job lints the code with [ruff](https://docs.astral.sh/ruff/). The
 lint only fails on the serious findings (syntax errors and undefined names,
 selected in `pyproject.toml`); the style warnings are listed for information.

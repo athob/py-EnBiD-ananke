@@ -96,9 +96,17 @@ jobs:
       run: |
         pip install .
     - name: Test with pytest
+      if: matrix.python-version != '3.12'
       run: |
         pip install pytest
         pytest src
+    - name: Test with pytest and report the coverage
+      if: matrix.python-version == '3.12'
+      run: |
+        pip install pytest pytest-cov
+        pytest src --cov
+        echo "### Test coverage (Python 3.12)" >> "$GITHUB_STEP_SUMMARY"
+        python -m coverage report --format=markdown --skip-empty >> "$GITHUB_STEP_SUMMARY"
   
   promote:
     name: Promote develop to stable
