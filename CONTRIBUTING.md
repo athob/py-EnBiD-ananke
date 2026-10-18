@@ -62,21 +62,26 @@ To have ruff run on every commit by itself, install the optional
 
 The **CI** workflow ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs on
 every push to a branch other than `main` and `stable`, on pull requests from forks
-into `develop`, every Monday (to notice new releases of the dependencies, or
-trouble downloading EnBiD, before anyone else does) and on demand from the Actions
-tab. For each
-Python version from 3.8 to 3.14 it installs the package and runs `pytest src`
-(the Python 3.12 run also reports the test coverage, in the run's summary),
-and a separate job lints the code with [ruff](https://docs.astral.sh/ruff/). The
-lint only fails on the serious findings (syntax errors and undefined names,
-selected in `pyproject.toml`); the style warnings are listed for information.
-A job builds the sdist and the wheel the way a release would and checks them
-(`twine check`, and `.github/scripts/check_dist.py`: the EnBiD executables must be in
-the wheel, and executable). A job builds the documentation, as Read the Docs does (for now it is only informative:
-a failure shows up in red, but does not stop `stable` from moving). Another job checks
-the workflow files themselves with
-[actionlint](https://github.com/rhysd/actionlint); you can run it locally too, and the
-pre-commit hook does so when it is installed.
+into `develop`, every Monday (to notice new releases of the dependencies, or trouble
+downloading EnBiD, before anyone else does) and on demand from the Actions tab. Its
+jobs:
+
+- **lint**: [ruff](https://docs.astral.sh/ruff/). Only the serious findings fail it
+  (syntax errors and undefined names, selected in `pyproject.toml`); the style
+  warnings are listed for information.
+- **workflows**: [actionlint](https://github.com/rhysd/actionlint) on the workflow
+  files. You can run it locally too, and the pre-commit hook does so when it is
+  installed.
+- **install**: for each Python version from 3.8 to 3.14, installs the package and
+  runs `pytest src`. The Python 3.12 run also reports the test coverage, in the
+  summary of the run.
+- **package**: builds the sdist and the wheel the way a release would, then runs
+  `twine check --strict` and `.github/scripts/check_dist.py`: the EnBiD executables
+  have to be in the wheel, and be executable.
+- **docs**: builds the documentation, as Read the Docs does. For now it is only
+  informative: a failure shows up in red, but does not stop `stable` from moving.
+- **promote**: on a push to `develop`, once lint, workflows, install and package have
+  passed, moves `stable` forward to that commit.
 
 If CI fails on one Python version only, it is usually a real incompatibility
 rather than bad luck.
