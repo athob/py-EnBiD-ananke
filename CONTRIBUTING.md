@@ -60,8 +60,11 @@ To have ruff run on every commit by itself, install the optional
 
 ## The automatic checks (CI)
 
-Every push to a branch other than `main` and `stable` runs the **CI**
-workflow ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)). For each
+The **CI** workflow ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs on
+every push to a branch other than `main` and `stable`, on pull requests from forks
+into `develop`, every Monday (to notice new releases of the dependencies, or
+trouble downloading EnBiD, before anyone else does) and on demand from the Actions
+tab. For each
 Python version from 3.8 to 3.14 it installs the package and runs `pytest src`,
 and a separate job lints the code with [ruff](https://docs.astral.sh/ruff/). The
 lint only fails on the serious findings (syntax errors and undefined names,
