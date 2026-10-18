@@ -1,7 +1,10 @@
 cff-version: "1.2.0"
 message: >-
-  If you use this software, please cite the py-ananke article in the Journal of
-  Open Source Software, and also EnBiD itself (Sharma & Steinmetz 2011).
+  If you use this software, please cite, in this order: the py-ananke article in
+  the Journal of Open Source Software (the preferred citation below); the Zenodo
+  record of py-EnBiD-ananke itself (the DOI below stands for all versions, each
+  release has one of its own), to make clear that this package was the software
+  used; and EnBiD (Sharma & Steinmetz 2011, in the references below).
 type: software
 title: "py-EnBiD-ananke: a python wrapper for EnBiD"
 abstract: >-
