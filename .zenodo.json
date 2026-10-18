@@ -18,5 +18,12 @@
     ],
     "license": "GPL-2.0-or-later",
     "upload_type": "software",
-    "description": "Python wrapper for EnBiD (<a href='http://ascl.net/1109.012' target='_blank' rel='noopener'>Sharma & Steinmetz 2011</a>)"
+    "description": "Python wrapper for EnBiD (<a href='http://ascl.net/1109.012' target='_blank' rel='noopener'>Sharma & Steinmetz 2011</a>)",
+    "related_identifiers": [
+        {
+            "relation": "isDocumentedBy",
+            "identifier": "10.21105/joss.06234",
+            "scheme": "doi"
+        }
+    ]
 }
