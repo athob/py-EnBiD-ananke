@@ -136,6 +136,31 @@ jobs:
         # the executables are in the wheel, the sdist can rebuild it
         python .github/scripts/check_dist.py dist
 
+  docs:
+    name: Build the documentation
+    # Not in the `needs` of promote (yet): a broken build shows here, red, without
+    # holding stable back. Read the Docs does the same build (.readthedocs.yaml).
+    # A pull request from a branch of this repository is already covered by the
+    # push to that branch: only those from forks need to run here.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Set up Python
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      with:
+        python-version: "3.12"
+    - name: Install the package and the documentation tools
+      run: |
+        pip install .
+        pip install -r docs/source/requirements.txt
+    - name: Build the documentation
+      # warnings are printed, errors fail the build
+      run: sphinx-build -b dirhtml docs/source docs/_build
+
   promote:
     name: Promote develop to stable
     # Only for a push to develop, and only once the lints and the tests have passed.

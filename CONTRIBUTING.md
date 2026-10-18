@@ -72,7 +72,9 @@ lint only fails on the serious findings (syntax errors and undefined names,
 selected in `pyproject.toml`); the style warnings are listed for information.
 A job builds the sdist and the wheel the way a release would and checks them
 (`twine check`, and `.github/scripts/check_dist.py`: the EnBiD executables must be in
-the wheel, and executable). Another job checks the workflow files themselves with
+the wheel, and executable). A job builds the documentation, as Read the Docs does (for now it is only informative:
+a failure shows up in red, but does not stop `stable` from moving). Another job checks
+the workflow files themselves with
 [actionlint](https://github.com/rhysd/actionlint); you can run it locally too, and the
 pre-commit hook does so when it is installed.
 
