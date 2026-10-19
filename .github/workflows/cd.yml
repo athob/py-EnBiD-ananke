@@ -106,7 +106,8 @@ jobs:
             git config --global --add safe.directory /workspace
             # Set up Python (use 3.10 from the manylinux image, choose a version you support)
             export PATH=/opt/python/cp310-cp310/bin:\$PATH
-            python -m pip install --upgrade pip build auditwheel
+            # Install the build tools: pinned, with hashes (see .github/requirements/)
+            python -m pip install --require-hashes -r .github/requirements/requirements-cd-build.txt
             # Build the distribution (sdist + wheel)
             python -m build
             # Repair the wheel
