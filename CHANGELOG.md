@@ -37,6 +37,9 @@ history. The package did not start with 0.2.0: it had been in development since 
   16 hexadecimal characters of the SHA-256 digest of the input data.
 - The source file headers say GPL v2.0 or later (GPL-2.0-or-later), as EnBiD's own
   copyright notice does.
+- The tools the CI and CD workflows install are locked with hashes, in
+  `.github/requirements/`: a tool cannot change under a run, and a release is built with
+  tools whose hashes were checked.
 - The `CI/CD` workflow is now two: `CI` and `CD`. `stable` is moved forward to a commit
   that passed CI by a fast-forward, the actions are pinned to commit SHAs, and the
   workflows only get the permissions they need.

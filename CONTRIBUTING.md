@@ -89,6 +89,15 @@ scanning; on `develop`, on pull requests and every Wednesday) and **Scorecard**
 supply-chain habits; from `main`, every Thursday). Their findings are meant to be
 looked at, and `stable` does not wait for them.
 
+The tools the workflows install (ruff, pytest, build and twine, the documentation tools,
+and what the CD workflow builds with) are locked with hashes in
+[`.github/requirements/`](.github/requirements): each `requirements-X.in` says what is
+wanted, and `requirements-X.txt` pins every package, transitive ones included, to a version
+and to the hashes of its files, which `pip install --require-hashes` then insists on.
+Dependabot proposes updates to the locks. To change one by hand, edit the `.in` file and run
+`bash .github/requirements/update.sh` (add `--upgrade` to move everything to the newest
+versions; it needs [uv](https://docs.astral.sh/uv/)), then commit the `.txt` files it wrote.
+
 If CI fails on one Python version only, it is usually a real incompatibility
 rather than bad luck.
 

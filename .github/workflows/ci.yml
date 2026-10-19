@@ -43,7 +43,7 @@ jobs:
         python-version: "3.12"
     - name: Lint with ruff
       run: |
-        pip install ruff
+        pip install --require-hashes -r .github/requirements/requirements-lint.txt
         # stop the build if there are Python syntax errors or undefined names
         ruff check . --output-format=github
         # exit-zero treats all errors as warnings
@@ -98,12 +98,12 @@ jobs:
     - name: Test with pytest
       if: matrix.python-version != '3.12'
       run: |
-        pip install pytest
+        pip install --require-hashes -r .github/requirements/requirements-test.txt
         pytest src
     - name: Test with pytest and report the coverage
       if: matrix.python-version == '3.12'
       run: |
-        pip install pytest pytest-cov
+        pip install --require-hashes -r .github/requirements/requirements-test.txt
         pytest src --cov
         echo "### Test coverage (Python 3.12)" >> "$GITHUB_STEP_SUMMARY"
         python -m coverage report --format=markdown --skip-empty >> "$GITHUB_STEP_SUMMARY"
@@ -127,7 +127,7 @@ jobs:
         python-version: "3.12"
     - name: Build the sdist and the wheel
       run: |
-        pip install build twine
+        pip install --require-hashes -r .github/requirements/requirements-package.txt
         python -m build
     - name: Check them
       run: |
@@ -156,7 +156,7 @@ jobs:
     - name: Install the package and the documentation tools
       run: |
         pip install .
-        pip install -r docs/source/requirements.txt
+        pip install --require-hashes -r .github/requirements/requirements-docs.txt
     - name: Build the documentation
       # warnings are printed, errors fail the build
       run: sphinx-build -b dirhtml docs/source docs/_build
