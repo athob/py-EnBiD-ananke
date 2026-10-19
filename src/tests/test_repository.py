@@ -84,6 +84,9 @@ def test_cd_waits_for_a_workflow_that_exists():
 
 
 REQUIREMENTS = ROOT / ".github" / "requirements"
+# frozen/ holds the lock of the Pythons that are past their end of life: Dependabot does not look there
+LOCKS = sorted(REQUIREMENTS.glob("requirements-*.txt")) + sorted(REQUIREMENTS.glob("frozen/requirements-*.txt"))
+SOURCES = sorted(REQUIREMENTS.glob("requirements-*.in")) + sorted(REQUIREMENTS.glob("frozen/requirements-*.in"))
 
 
 def test_pip_installs_in_workflows_are_pinned_by_hash():
@@ -101,9 +104,10 @@ def test_pip_installs_in_workflows_are_pinned_by_hash():
 
 @pytest.mark.parametrize("workflow", WORKFLOWS, ids=lambda p: p.name)
 def test_workflows_install_locks_that_exist(workflow):
+    # the names are found wherever they are written, in a command or in a matrix: `frozen/` included
     text = workflow.read_text(encoding="utf-8")
-    for lock in re.findall(r"--require-hashes\s+-r\s+(\S+)", text):
-        assert (ROOT / lock).is_file(), f"{workflow.name} installs {lock}, which does not exist"
+    for lock in set(re.findall(r"(?:frozen/)?requirements-[\w.\-]+\.txt", text)):
+        assert (REQUIREMENTS / lock).is_file(), f"{workflow.name} installs {lock}, which does not exist"
 
 
 def test_dependabot_updates_the_locks_with_uv():
@@ -117,7 +121,7 @@ def test_dependabot_updates_the_locks_with_uv():
     assert entries[0].split()[0].strip("\"'") == "uv", "the locks must be updated by the uv ecosystem, not pip"
 
 
-@pytest.mark.parametrize("lock", sorted(REQUIREMENTS.glob("requirements-*.txt")), ids=lambda p: p.name)
+@pytest.mark.parametrize("lock", LOCKS, ids=lambda p: f"{p.parent.name}/{p.name}")
 def test_locks_record_the_command_dependabot_runs_again(lock):
     header = "\n".join(lock.read_text(encoding="utf-8").splitlines()[:3])
     assert f"uv pip compile {lock.stem}.in" in header, f"{lock.name} does not record its uv pip compile command"
@@ -126,10 +130,10 @@ def test_locks_record_the_command_dependabot_runs_again(lock):
 
 
 def test_there_are_ci_requirements():
-    assert list(REQUIREMENTS.glob("requirements-*.in"))
+    assert SOURCES
 
 
-@pytest.mark.parametrize("source", sorted(REQUIREMENTS.glob("requirements-*.in")), ids=lambda p: p.name)
+@pytest.mark.parametrize("source", SOURCES, ids=lambda p: f"{p.parent.name}/{p.name}")
 def test_ci_requirements_are_locked_with_hashes(source):
     lock = source.with_suffix(".txt")
     assert lock.is_file(), f"{lock.name} is missing: run .github/requirements/update.sh"

@@ -16,12 +16,13 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 upgrade=()
 if [ "${1:-}" = "--upgrade" ]; then upgrade=(--upgrade); fi
 
-lock() {  # lock NAME LOWEST_PYTHON
-  uv pip compile "requirements-$1.in" --output-file "requirements-$1.txt" \
-    --universal --generate-hashes --python-version "$2" ${upgrade[@]+"${upgrade[@]}"}
+lock() {  # lock NAME LOWEST_PYTHON [FOLDER]
+  (cd "${3:-.}" && uv pip compile "requirements-$1.in" --output-file "requirements-$1.txt" \
+    --universal --generate-hashes --python-version "$2" ${upgrade[@]+"${upgrade[@]}"})
 }
 lock lint 3.12
 lock test 3.8
+lock test 3.8 frozen   # the end-of-life Pythons: Dependabot does not look in frozen/
 lock package 3.12
 lock docs 3.12
 lock cd-build 3.10

@@ -87,6 +87,15 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        # The Pythons at the end of their life run the tests with the frozen lock (the one that
+        # Dependabot does not maintain); the others, with requirements-test.txt.
+        include:
+          - python-version: "3.8"
+            test-lock: frozen/requirements-test.txt
+          - python-version: "3.9"
+            test-lock: frozen/requirements-test.txt
+          - python-version: "3.10"
+            test-lock: frozen/requirements-test.txt
 
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -103,12 +112,12 @@ jobs:
     - name: Test with pytest
       if: matrix.python-version != '3.12'
       run: |
-        pip install --require-hashes -r .github/requirements/requirements-test.txt
+        pip install --require-hashes -r .github/requirements/${{ matrix.test-lock || 'requirements-test.txt' }}
         pytest src
     - name: Test with pytest and report the coverage
       if: matrix.python-version == '3.12'
       run: |
-        pip install --require-hashes -r .github/requirements/requirements-test.txt
+        pip install --require-hashes -r .github/requirements/${{ matrix.test-lock || 'requirements-test.txt' }}
         pytest src --cov
         echo "### Test coverage (Python 3.12)" >> "$GITHUB_STEP_SUMMARY"
         python -m coverage report --format=markdown --skip-empty >> "$GITHUB_STEP_SUMMARY"
