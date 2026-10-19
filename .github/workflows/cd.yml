@@ -19,32 +19,21 @@ jobs:
     name: Classify the tag
     runs-on: ubuntu-latest
     outputs:
-      kind: ${{ steps.classify.outputs.kind }}
+      kind: ${{ steps.meta.outputs.kind }}
 
     steps:
-    - name: Classify the tag
-      id: classify
+    - name: Checkout code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Classify the tag and check the changelog
+      id: meta
       env:
         TAG: ${{ github.ref_name }}
-      run: |
-        # After the leading v, the tag has to be a plain PEP 440 version:
-        #   release      v0.3.4  v0.3.4.post1   -> TestPyPI, then PyPI
-        #   pre-release  v0.3.4a1  v0.3.4b1  v0.3.4rc0   -> TestPyPI, after CI passed
-        #   development  v0.3.4.dev0  v0.3.4rc0.dev1   -> TestPyPI, straight away
-        # Anything else (v0.3.4-test, ...) is refused, so that nothing that is not a
-        # clean release can reach PyPI.
-        if [[ ! "$TAG" =~ ^v[0-9]+(\.[0-9]+)*((a|b|rc)[0-9]+)?(\.post[0-9]+)?(\.dev[0-9]+)?$ ]]; then
-          echo "::error::The tag '$TAG' is not a version the CD workflow knows how to publish. Use v<N>[.<N>...] with an optional a<N>, b<N>, rc<N>, .post<N> or .dev<N> suffix, e.g. v0.3.4rc0 or v0.3.4.dev0."
-          exit 1
-        elif [[ "$TAG" == *.dev* ]]; then
-          kind=dev
-        elif [[ "$TAG" =~ (a|b|rc)[0-9]+ ]]; then
-          kind=prerelease
-        else
-          kind=release
-        fi
-        echo "kind=$kind" >> "$GITHUB_OUTPUT"
-        echo "Tag $TAG is a $kind version." >> "$GITHUB_STEP_SUMMARY"
+      # What a tag may look like, and where each kind goes, is in the script. For a
+      # release it also makes sure CHANGELOG.md has the section of that version,
+      # before anything is built or published.
+      run: python3 .github/scripts/release_meta.py check "$TAG" --github-output "$GITHUB_OUTPUT"
 
   build:
     name: Build distribution 📦
