@@ -129,6 +129,55 @@ def test_locks_record_the_command_dependabot_runs_again(lock):
         assert option in header, f"{lock.name} was not compiled with {option}: Dependabot would not keep it"
 
 
+@pytest.mark.parametrize("lock", sorted(REQUIREMENTS.glob("requirements-*.txt")), ids=lambda p: p.name)
+def test_locks_dependabot_maintains_pin_each_package_once(lock):
+    # Dependabot takes one version as the current one and checks the newest can be pinned for
+    # every Python the lock covers: a package locked once per Python is reported as an error.
+    # Such a lock belongs in frozen/, which it does not look at.
+    pins = [line for line in lock.read_text(encoding="utf-8").splitlines()
+            if re.match(r"^[A-Za-z0-9_.\-]+(\[[^\]]*\])?==", line)]
+    names = [re.match(r"^([A-Za-z0-9_.\-]+)", line).group(1).lower() for line in pins]
+    twice = sorted({name for name in names if names.count(name) > 1})
+    assert not twice, f"{lock.name} pins {twice} more than once: it cannot be maintained by Dependabot"
+
+
+def test_dependabot_does_not_look_in_the_frozen_folder():
+    text = (ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8")
+    assert not re.search(r"directory:\s*/\.github/requirements/frozen", text)
+
+
+def test_each_python_of_the_matrix_has_the_right_test_lock():
+    # the Pythons below the one requirements-test.txt is compiled for use the frozen lock, the others do not
+    ci = read(".github/workflows/ci.yml")
+    versions = re.findall(r'"(3\.\d+)"', re.search(r"python-version:\s*\[([^\]]*)\]", ci).group(1))
+    frozen = dict(re.findall(r'-\s*python-version:\s*"(3\.\d+)"\s*\n\s*test-lock:\s*(\S+)', ci))
+    header = "\n".join((REQUIREMENTS / "requirements-test.txt").read_text(encoding="utf-8").splitlines()[:3])
+    lowest = int(re.search(r"--python-version\s+3\.(\d+)", header).group(1))
+    for version in versions:
+        if int(version.split(".")[1]) < lowest:
+            assert frozen.get(version) == "frozen/requirements-test.txt", f"Python {version} needs the frozen lock"
+        else:
+            assert version not in frozen, f"Python {version} is covered by requirements-test.txt"
+
+
+def test_the_frozen_lock_is_a_complete_lock():
+    # Compiled with the oldest Python the package supports, it holds an answer for every Python
+    # from there up: that is what lets a Python be retired to it without touching it, and what a
+    # copy of the live lock (compiled for a newer Python) would lose.
+    oldest = re.search(r"python_requires\s*=\s*['\"]>=3\.(\d+)", read("setup.py")).group(1)
+    lock = REQUIREMENTS / "frozen" / "requirements-test.txt"
+    header = "\n".join(lock.read_text(encoding="utf-8").splitlines()[:3])
+    assert re.search(rf"--python-version\s+3\.{oldest}\b", header), \
+        f"frozen/requirements-test.txt has to be compiled for Python 3.{oldest}, the oldest the package supports"
+
+
+def test_the_live_and_the_frozen_test_requirements_ask_for_the_same_tools():
+    def tools(path):
+        lines = (REQUIREMENTS / path).read_text(encoding="utf-8").splitlines()
+        return sorted(line.strip() for line in lines if line.strip() and not line.startswith("#"))
+    assert tools("requirements-test.in") == tools("frozen/requirements-test.in")
+
+
 def test_there_are_ci_requirements():
     assert SOURCES
 

@@ -96,7 +96,19 @@ wanted, and `requirements-X.txt` pins every package, transitive ones included, t
 and to the hashes of its files, which `pip install --require-hashes` then insists on.
 Dependabot proposes updates to the locks, by running again the `uv pip compile` command a
 lock records in its header (which is why `dependabot.yml` says `uv`, not `pip`: pip-tools
-would resolve for one Python only). To change one by hand, edit the `.in` file and run
+would resolve for one Python only). It takes one version of each package as the current
+one, and checks that the newest can be pinned for every Python the lock covers, so it cannot
+maintain a lock that holds a package once per Python. The test tools are therefore locked
+twice. `requirements-test.txt` covers the Pythons that are still supported (3.11 and up), and
+is maintained by Dependabot. `frozen/requirements-test.txt` is a complete lock of every Python
+from the oldest the package supports (3.8) up, used by the ones at the end of their life (3.8
+to 3.10), in a folder Dependabot does not look at. Because it is complete, retiring a Python to
+it never touches it: raise the `--python-version` of the test lock in `update.sh`, add that
+Python to the matrix of `ci.yml` (the tests check that both agree), and run `update.sh`. Never
+copy the live lock into `frozen/`, which would lose the entries of the older Pythons (the tests
+catch that too). `update.sh --upgrade` refreshes the frozen lock when that is worth it, and uv
+gives each Python the newest version it supports. To change a lock by hand, edit the `.in` file
+and run
 `bash .github/requirements/update.sh` (add `--upgrade` to move everything to the newest
 versions; it needs [uv](https://docs.astral.sh/uv/)), then commit the `.txt` files it wrote.
 The same script writes the checksum the actionlint download is checked against: run it

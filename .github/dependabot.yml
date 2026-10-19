@@ -37,6 +37,12 @@ updates:
   # what broke the test lock, and why only 3.8, 3.9 and 3.10 failed). The uv ecosystem runs
   # the `uv pip compile` command recorded in the lock again, options included.
   #
+  # Dependabot takes one version of each package as "the current one", and checks that the newest
+  # can be pinned for every Python the lock covers. A lock that holds several versions of a
+  # package, one per Python, therefore cannot be maintained by it (it reported pytest, coverage and
+  # pluggy as errors): the Pythons past their end of life have their lock in frozen/, which is
+  # not a directory it looks at, and requirements-test.txt only covers the supported ones.
+  #
   # `allow: all`, because most of what the locks hold (coverage, pluggy, the Sphinx stack...)
   # is not named in a .in file, and Dependabot proposes nothing for those by default.
   - package-ecosystem: uv
@@ -50,6 +56,12 @@ updates:
     open-pull-requests-limit: 5
     allow:
       - dependency-type: all
+    ignore:
+      # docutils 0.23 cannot be locked: every myst-parser release caps docutils below 0.23 (the
+      # docs lock). uv rightly refuses to resolve it, but Dependabot reports that as an error and
+      # fails its whole run, every week. Remove this once a myst-parser release allows 0.23.
+      - dependency-name: docutils
+        versions: [">=0.23"]
     groups:
       ci-tools:
         patterns: ["*"]
