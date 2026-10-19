@@ -28,9 +28,18 @@ updates:
 
   # The tools the CI and CD workflows install are locked, with hashes, in
   # .github/requirements/: update.sh writes each requirements-X.txt from the
-  # requirements-X.in next to it. Dependabot proposes the newer versions, with the hashes
-  # of their files; `bash .github/requirements/update.sh --upgrade` does the same by hand.
-  - package-ecosystem: pip
+  # requirements-X.in next to it, with `uv pip compile --universal --generate-hashes
+  # --python-version N`, and the lock records that command in its header.
+  #
+  # The ecosystem has to be uv, not pip. The pip ecosystem regenerates a compiled lock with
+  # pip-tools' pip-compile, which knows neither --universal nor --python-version: it resolves
+  # for its own Python on its own platform, and drops what the other Pythons need (that is
+  # what broke the test lock, and why only 3.8, 3.9 and 3.10 failed). The uv ecosystem runs
+  # the `uv pip compile` command recorded in the lock again, options included.
+  #
+  # `allow: all`, because most of what the locks hold (coverage, pluggy, the Sphinx stack...)
+  # is not named in a .in file, and Dependabot proposes nothing for those by default.
+  - package-ecosystem: uv
     directory: /.github/requirements
     target-branch: develop
     schedule:
@@ -39,6 +48,8 @@ updates:
       time: "06:00"
       timezone: America/New_York
     open-pull-requests-limit: 5
+    allow:
+      - dependency-type: all
     groups:
       ci-tools:
         patterns: ["*"]

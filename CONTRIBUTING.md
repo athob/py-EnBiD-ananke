@@ -94,7 +94,9 @@ and what the CD workflow builds with) are locked with hashes in
 [`.github/requirements/`](.github/requirements): each `requirements-X.in` says what is
 wanted, and `requirements-X.txt` pins every package, transitive ones included, to a version
 and to the hashes of its files, which `pip install --require-hashes` then insists on.
-Dependabot proposes updates to the locks. To change one by hand, edit the `.in` file and run
+Dependabot proposes updates to the locks, by running again the `uv pip compile` command a
+lock records in its header (which is why `dependabot.yml` says `uv`, not `pip`: pip-tools
+would resolve for one Python only). To change one by hand, edit the `.in` file and run
 `bash .github/requirements/update.sh` (add `--upgrade` to move everything to the newest
 versions; it needs [uv](https://docs.astral.sh/uv/)), then commit the `.txt` files it wrote.
 The same script writes the checksum the actionlint download is checked against: run it

@@ -99,6 +99,32 @@ def test_pip_installs_in_workflows_are_pinned_by_hash():
     assert not unpinned, f"pip install without --require-hashes: {unpinned}"
 
 
+@pytest.mark.parametrize("workflow", WORKFLOWS, ids=lambda p: p.name)
+def test_workflows_install_locks_that_exist(workflow):
+    text = workflow.read_text(encoding="utf-8")
+    for lock in re.findall(r"--require-hashes\s+-r\s+(\S+)", text):
+        assert (ROOT / lock).is_file(), f"{workflow.name} installs {lock}, which does not exist"
+
+
+def test_dependabot_updates_the_locks_with_uv():
+    # The pip ecosystem would regenerate a lock with pip-compile for its own Python only, and drop
+    # what the other Pythons need: it broke the test lock. The uv ecosystem runs the lock's own
+    # `uv pip compile` command again.
+    text = (ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8")
+    entries = [e for e in re.split(r"^\s*- package-ecosystem:\s*", text, flags=re.MULTILINE)[1:]
+               if re.search(r"^\s*directory:\s*/\.github/requirements\s*$", e, flags=re.MULTILINE)]
+    assert len(entries) == 1, "dependabot.yml needs exactly one entry for /.github/requirements"
+    assert entries[0].split()[0].strip("\"'") == "uv", "the locks must be updated by the uv ecosystem, not pip"
+
+
+@pytest.mark.parametrize("lock", sorted(REQUIREMENTS.glob("requirements-*.txt")), ids=lambda p: p.name)
+def test_locks_record_the_command_dependabot_runs_again(lock):
+    header = "\n".join(lock.read_text(encoding="utf-8").splitlines()[:3])
+    assert f"uv pip compile {lock.stem}.in" in header, f"{lock.name} does not record its uv pip compile command"
+    for option in ("--universal", "--generate-hashes", "--python-version"):
+        assert option in header, f"{lock.name} was not compiled with {option}: Dependabot would not keep it"
+
+
 def test_there_are_ci_requirements():
     assert list(REQUIREMENTS.glob("requirements-*.in"))
 
