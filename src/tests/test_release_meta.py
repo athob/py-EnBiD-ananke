@@ -80,6 +80,11 @@ def test_changelog_section_stops_at_the_next_section_and_at_the_links():
     assert release_meta.changelog_section(CHANGELOG, "9.9.9") is None
 
 
+def test_changelog_section_stops_at_any_second_level_heading():
+    text = "## [1.0.0] - 2026-01-01\n\n- a\n\n## Before 1.0.0\n\nnot part of it\n\n[1.0.0]: https://example.org\n"
+    assert release_meta.changelog_section(text, "1.0.0")[1] == "- a"
+
+
 def test_release_section():
     assert release_meta.release_section("1.1.0", CHANGELOG).startswith("### Added")
 

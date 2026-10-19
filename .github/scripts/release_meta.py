@@ -70,7 +70,8 @@ def changelog_section(text: str, name: str) -> Optional[Tuple[str, str]]:
     """The (heading remainder, body) of the ``## [name]`` section, or None.
 
     The remainder is what follows the bracketed name on the heading line (the date);
-    the body is trimmed, and stops before the next section or the link references.
+    the body is trimmed, and stops before the next second-level heading (whether or not
+    it is a version: the history before 0.2.0 has one of its own) or the link references.
     """
     lines: List[str] = text.splitlines()
     for i, line in enumerate(lines):
@@ -78,7 +79,7 @@ def changelog_section(text: str, name: str) -> Optional[Tuple[str, str]]:
         if match and match.group("name") == name:
             body: List[str] = []
             for following in lines[i + 1:]:
-                if SECTION_RE.match(following) or LINK_REF_RE.match(following):
+                if following.startswith("## ") or LINK_REF_RE.match(following):
                     break
                 body.append(following)
             return match.group("rest"), "\n".join(body).strip()
