@@ -83,9 +83,11 @@ jobs:
 - **promote**: on a push to `develop`, once lint, workflows, install and package have
   passed, moves `stable` forward to that commit.
 
-Apart from CI, the **CodeQL** workflow (code scanning) runs on `develop`, on pull
-requests and every Wednesday. Its findings are listed under Security > Code scanning:
-they are meant to be looked at, and `stable` does not wait for them.
+Apart from CI, two workflows report to Security > Code scanning: **CodeQL** (code
+scanning; on `develop`, on pull requests and every Wednesday) and **Scorecard**
+(the [OpenSSF](https://securityscorecards.dev) grading of the repository's
+supply-chain habits; from `main`, every Thursday). Their findings are meant to be
+looked at, and `stable` does not wait for them.
 
 If CI fails on one Python version only, it is usually a real incompatibility
 rather than bad luck.
