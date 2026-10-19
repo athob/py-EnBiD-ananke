@@ -24,6 +24,7 @@ history. Versions before 0.2.0 were pre-releases: see their tags and release not
   and check of the sdist and the wheel, and a build of the documentation. CI also runs
   on pull requests, every week and on demand.
 - A README that gives the installation requirements and says how to cite the package.
+- CodeQL code scanning of the Python source.
 - A releasing guide. The CD workflow checks that `CHANGELOG.md` has the dated section of a
   release before building anything, and creates the GitHub release from that section.
 

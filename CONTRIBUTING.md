@@ -83,6 +83,10 @@ jobs:
 - **promote**: on a push to `develop`, once lint, workflows, install and package have
   passed, moves `stable` forward to that commit.
 
+Apart from CI, the **CodeQL** workflow (code scanning) runs on `develop`, on pull
+requests and every Wednesday. Its findings are listed under Security > Code scanning:
+they are meant to be looked at, and `stable` does not wait for them.
+
 If CI fails on one Python version only, it is usually a real incompatibility
 rather than bad luck.
 
