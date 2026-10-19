@@ -97,6 +97,8 @@ and to the hashes of its files, which `pip install --require-hashes` then insist
 Dependabot proposes updates to the locks. To change one by hand, edit the `.in` file and run
 `bash .github/requirements/update.sh` (add `--upgrade` to move everything to the newest
 versions; it needs [uv](https://docs.astral.sh/uv/)), then commit the `.txt` files it wrote.
+The same script writes the checksum the actionlint download is checked against: run it
+again whenever `ACTIONLINT_VERSION` changes in `ci.yml`.
 
 If CI fails on one Python version only, it is usually a real incompatibility
 rather than bad luck.

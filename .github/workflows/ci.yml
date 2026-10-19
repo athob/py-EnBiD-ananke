@@ -59,7 +59,8 @@ jobs:
       # actionlint (https://github.com/rhysd/actionlint) reads .github/workflows/
       # without running anything: a misspelled key, a `needs:` naming no job, a
       # `${{ }}` expression that cannot work, a `run:` script that shellcheck
-      # (preinstalled on the runner) objects to. The version is used twice below.
+      # (preinstalled on the runner) objects to. When the version changes, run
+      # .github/requirements/update.sh again: it writes the checksum checked below.
       ACTIONLINT_VERSION: "1.7.12"
 
     steps:
@@ -67,9 +68,13 @@ jobs:
       with:
         persist-credentials: false
     - name: Install actionlint
-      # the project's own installer, taken from the tag of the pinned version
+      # the release archive of the pinned version, which has to match the checksum
+      # committed in .github/requirements/actionlint.sha256
       run: |
-        bash <(curl -sSfL "https://raw.githubusercontent.com/rhysd/actionlint/v${ACTIONLINT_VERSION}/scripts/download-actionlint.bash") "${ACTIONLINT_VERSION}"
+        archive="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+        curl -sSfL -o "$archive" "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/${archive}"
+        echo "$(cat .github/requirements/actionlint.sha256)  ${archive}" | sha256sum --check
+        tar -xzf "$archive" actionlint
     - name: actionlint
       run: ./actionlint -color
 
