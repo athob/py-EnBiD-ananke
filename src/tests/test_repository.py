@@ -1,0 +1,136 @@
+#!/usr/bin/env python
+#
+# Author: Adrien CR Thob
+# Copyright (C) 2026  Adrien CR Thob
+#
+# This file is part of the py-EnBiD-ananke project,
+# <https://github.com/athob/py-EnBiD-ananke>,  which is licensed
+# under the GNU General Public License v2.0 or later (GPL-2.0-or-later).
+#
+# The full copyright notice, including terms governing use, modification,
+# and redistribution, is contained in the files LICENSE and COPYRIGHT,
+# which can be found at the root of the source code distribution tree:
+# - LICENSE <https://github.com/athob/py-EnBiD-ananke/blob/main/LICENSE>
+# - COPYRIGHT <https://github.com/athob/py-EnBiD-ananke/blob/main/COPYRIGHT>
+#
+"""
+Tests of the repository itself rather than of the code: the project files are there,
+what has to agree with something else does (the DOIs, the license wording), the
+workflows keep the habits they were given, the changelog has its format. Standard
+library only, and nothing here needs EnBiD.
+"""
+import json
+import pathlib
+import re
+
+import pytest
+
+ROOT = pathlib.Path(__file__).resolve().parents[2]
+WORKFLOWS = sorted((ROOT / ".github" / "workflows").glob("*.yml"))
+
+ZENODO_DOI = "10.5281/zenodo.13937082"   # all versions of this package
+JOSS_DOI = "10.21105/joss.06234"         # the py-ananke article
+
+
+def read(path):
+    return (ROOT / path).read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("path", [
+    "README.md", "LICENSE", "COPYRIGHT", "CHANGELOG.md", "CONTRIBUTING.md", "RELEASING.md",
+    "CODE_OF_CONDUCT.md", "SECURITY.md", "CITATION.cff", ".zenodo.json", ".editorconfig",
+    ".gitattributes", ".pre-commit-config.yaml", ".markdownlint.yaml", ".readthedocs.yaml",
+    ".github/dependabot.yml", ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/ISSUE_TEMPLATE/bug_report.yml", ".github/ISSUE_TEMPLATE/feature_request.yml",
+    ".github/ISSUE_TEMPLATE/config.yml",
+])
+def test_project_file_exists(path):
+    assert (ROOT / path).is_file(), f"{path} is missing"
+
+
+def test_gitattributes_keeps_versioneer_export_subst():
+    # versioneer needs this to find the version in a `git archive`
+    assert "src/enbid_ananke/_version.py export-subst" in read(".gitattributes")
+
+
+# -- the workflows -----------------------------------------------------------------
+
+def test_there_are_workflows():
+    assert {p.name for p in WORKFLOWS} >= {"ci.yml", "cd.yml"}
+
+
+@pytest.mark.parametrize("workflow", WORKFLOWS, ids=lambda p: p.name)
+def test_actions_are_pinned_to_a_commit(workflow):
+    unpinned = []
+    for line in workflow.read_text(encoding="utf-8").splitlines():
+        match = re.match(r"^\s*(?:-\s+)?uses:\s+(?P<action>[^@\s]+)@(?P<ref>\S+)(?P<rest>.*)$", line)
+        if match and not match.group("action").startswith("./"):
+            if not re.fullmatch(r"[0-9a-f]{40}", match.group("ref")) or "#" not in match.group("rest"):
+                unpinned.append(line.strip())
+    assert not unpinned, f"{workflow.name}: pin to a commit SHA, with the version in a comment: {unpinned}"
+
+
+@pytest.mark.parametrize("workflow", WORKFLOWS, ids=lambda p: p.name)
+def test_workflows_set_their_permissions(workflow):
+    text = workflow.read_text(encoding="utf-8")
+    assert re.search(r"^permissions:", text, flags=re.MULTILINE), \
+        f"{workflow.name} has no top-level `permissions:`: the token would get the repository default"
+
+
+def test_cd_waits_for_a_workflow_that_exists():
+    match = re.search(r'WORKFLOW_FILE="([^"]+)"', read(".github/workflows/cd.yml"))
+    assert match, "the CD workflow no longer says which workflow it waits for"
+    assert (ROOT / ".github" / "workflows" / match.group(1)).is_file()
+
+
+# -- what has to agree with something else ----------------------------------------
+
+def test_the_dois_agree():
+    metadata = re.search(r'^__doi__ = "([^"]+)"', read("src/enbid_ananke/__metadata__.py"), flags=re.MULTILINE)
+    assert metadata and metadata.group(1) == JOSS_DOI
+    cff = read("CITATION.cff")
+    assert re.search(rf"^doi: {re.escape(ZENODO_DOI)}$", cff, flags=re.MULTILINE)
+    assert re.search(rf"^  doi: {re.escape(JOSS_DOI)}$", cff, flags=re.MULTILINE)
+    readme = read("README.md")
+    assert ZENODO_DOI in readme and JOSS_DOI in readme
+    related = json.loads(read(".zenodo.json"))["related_identifiers"]
+    assert any(item["identifier"] == JOSS_DOI for item in related)
+
+
+def test_the_license_is_said_the_same_way_everywhere():
+    assert json.loads(read(".zenodo.json"))["license"] == "GPL-2.0-or-later"
+    assert re.search(r"^license: GPL-2.0-or-later$", read("CITATION.cff"), flags=re.MULTILINE)
+    assert "(GPLv2+)" in read("src/enbid_ananke/__metadata__.py")
+
+
+def test_zenodo_and_citation_files_name_the_same_software():
+    title = json.loads(read(".zenodo.json"))["title"]
+    assert re.search(rf'^title: "{re.escape(title)}"$', read("CITATION.cff"), flags=re.MULTILINE)
+
+
+def test_source_files_carry_the_license_header():
+    # empty files, Sphinx's conf.py, and what versioneer generates are the exceptions; so is
+    # a symlink that a checkout without symlink support holds as a line of text
+    exempt = {"conf.py", "_version.py", "versioneer.py"}
+    missing = []
+    candidates = list((ROOT / "src").rglob("*.py")) + list((ROOT / ".github").rglob("*.py")) + [ROOT / "setup.py"]
+    for path in candidates:
+        if path.is_symlink() or path.name in exempt or "Enbid-2.0" in path.parts:
+            continue
+        text = path.read_text(encoding="utf-8")
+        if len(text.splitlines()) >= 3 and "(GPL-2.0-or-later)" not in text:
+            missing.append(str(path.relative_to(ROOT)))
+    assert not missing, f"no GPL-2.0-or-later header in: {missing}"
+
+
+# -- the changelog -----------------------------------------------------------------
+
+def test_changelog_format():
+    text = read("CHANGELOG.md")
+    headings = re.findall(r"^## \[([^\]]+)\](.*)$", text, flags=re.MULTILINE)
+    names = [name for name, _ in headings]
+    assert names and names[0] == "Unreleased", "the first section has to be [Unreleased]"
+    for name, rest in headings[1:]:
+        assert re.fullmatch(r" - \d{4}-\d{2}-\d{2}", rest), f"[{name}] needs '## [{name}] - YYYY-MM-DD'"
+    links = set(re.findall(r"^\[([^\]]+)\]:\s", text, flags=re.MULTILINE))
+    assert set(names) <= links, f"no link at the bottom for: {sorted(set(names) - links)}"
