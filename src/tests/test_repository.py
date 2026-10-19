@@ -83,6 +83,43 @@ def test_cd_waits_for_a_workflow_that_exists():
     assert (ROOT / ".github" / "workflows" / match.group(1)).is_file()
 
 
+REQUIREMENTS = ROOT / ".github" / "requirements"
+
+
+def test_pip_installs_in_workflows_are_pinned_by_hash():
+    # installing this repository itself (`pip install .`) cannot be pinned by hash; any other
+    # pip install has to be of a lock (see .github/requirements/update.sh)
+    unpinned = []
+    for workflow in WORKFLOWS:
+        for number, line in enumerate(workflow.read_text(encoding="utf-8").splitlines(), 1):
+            code = line.split("#", 1)[0].strip()
+            if re.search(r"\bpip install\b", code) and "--require-hashes" not in code \
+                    and not re.search(r"\bpip install \.$", code):
+                unpinned.append(f"{workflow.name}:{number}: {code}")
+    assert not unpinned, f"pip install without --require-hashes: {unpinned}"
+
+
+def test_there_are_ci_requirements():
+    assert list(REQUIREMENTS.glob("requirements-*.in"))
+
+
+@pytest.mark.parametrize("source", sorted(REQUIREMENTS.glob("requirements-*.in")), ids=lambda p: p.name)
+def test_ci_requirements_are_locked_with_hashes(source):
+    lock = source.with_suffix(".txt")
+    assert lock.is_file(), f"{lock.name} is missing: run .github/requirements/update.sh"
+    pins = [line for line in lock.read_text(encoding="utf-8").splitlines()
+            if re.match(r"^[A-Za-z0-9_.\-]+(\[[^\]]*\])?==", line)]
+    assert pins, f"{lock.name} pins nothing"
+    # every pin is followed by the hashes of its files, which is what the trailing backslash says
+    assert all(line.rstrip().endswith("\\") for line in pins), f"a pin without hashes in {lock.name}"
+    assert "--hash=sha256:" in lock.read_text(encoding="utf-8")
+
+
+def test_the_actionlint_download_has_its_checksum():
+    checksum = (REQUIREMENTS / "actionlint.sha256").read_text(encoding="utf-8").strip()
+    assert re.fullmatch(r"[0-9a-f]{64}", checksum)
+
+
 # -- what has to agree with something else ----------------------------------------
 
 def test_the_dois_agree():

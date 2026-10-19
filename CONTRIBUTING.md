@@ -114,8 +114,8 @@ rather than bad luck.
 - **The repository checks itself**: `src/tests/test_repository.py` verifies, among other
   things, that the DOIs and the license wording agree between the README, `CITATION.cff`,
   `.zenodo.json` and the metadata, that the actions are pinned and the workflows set their
-  permissions, and that the changelog has its format. If you change one of those, it tells
-  you what else needs to follow.
+  permissions, that what they install is locked with hashes, and that the changelog has its
+  format. If you change one of those, it tells you what else needs to follow.
 - **A change a user would notice gets a line in `CHANGELOG.md`**, under
   `[Unreleased]`, in the matching group (Added, Changed, Deprecated, Removed,
   Fixed or Security). The release moves those lines under the new version.
