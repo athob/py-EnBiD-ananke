@@ -22,7 +22,7 @@ lock() {  # lock NAME LOWEST_PYTHON [FOLDER]
 }
 lock lint 3.12
 lock test 3.11   # the Pythons still supported: one version per package, which Dependabot needs
-lock test 3.8 frozen   # the end-of-life Pythons: Dependabot does not look in frozen/
+lock test 3.8 ../requirements-frozen   # the end-of-life Pythons, where Dependabot does not look
 lock package 3.12
 lock docs 3.12
 lock cd-build 3.10

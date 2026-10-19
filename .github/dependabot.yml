@@ -40,7 +40,9 @@ updates:
   # Dependabot takes one version of each package as "the current one", and checks that the newest
   # can be pinned for every Python the lock covers. A lock that holds several versions of a
   # package, one per Python, therefore cannot be maintained by it (it reported pytest, coverage and
-  # pluggy as errors): the Pythons past their end of life have their lock in frozen/, which is
+  # pluggy as errors): the Pythons past their end of life have their lock in
+  # .github/requirements-frozen/, next to this directory and not in it (Dependabot also fetches
+  # the subfolders of its directory), which is
   # not a directory it looks at, and requirements-test.txt only covers the supported ones.
   #
   # `allow: all`, because most of what the locks hold (coverage, pluggy, the Sphinx stack...)

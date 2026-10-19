@@ -84,9 +84,11 @@ def test_cd_waits_for_a_workflow_that_exists():
 
 
 REQUIREMENTS = ROOT / ".github" / "requirements"
-# frozen/ holds the lock of the Pythons that are past their end of life: Dependabot does not look there
-LOCKS = sorted(REQUIREMENTS.glob("requirements-*.txt")) + sorted(REQUIREMENTS.glob("frozen/requirements-*.txt"))
-SOURCES = sorted(REQUIREMENTS.glob("requirements-*.in")) + sorted(REQUIREMENTS.glob("frozen/requirements-*.in"))
+# requirements-frozen/ holds the lock of the Pythons that are past their end of life. It is next to
+# requirements/ and not in it: Dependabot fetches the subfolders of the folder it is given.
+FROZEN = ROOT / ".github" / "requirements-frozen"
+LOCKS = sorted(REQUIREMENTS.glob("requirements-*.txt")) + sorted(FROZEN.glob("requirements-*.txt"))
+SOURCES = sorted(REQUIREMENTS.glob("requirements-*.in")) + sorted(FROZEN.glob("requirements-*.in"))
 
 
 def test_pip_installs_in_workflows_are_pinned_by_hash():
@@ -104,10 +106,10 @@ def test_pip_installs_in_workflows_are_pinned_by_hash():
 
 @pytest.mark.parametrize("workflow", WORKFLOWS, ids=lambda p: p.name)
 def test_workflows_install_locks_that_exist(workflow):
-    # the names are found wherever they are written, in a command or in a matrix: `frozen/` included
+    # the names are found wherever they are written, in a command or in a matrix, relative to .github/
     text = workflow.read_text(encoding="utf-8")
-    for lock in set(re.findall(r"(?:frozen/)?requirements-[\w.\-]+\.txt", text)):
-        assert (REQUIREMENTS / lock).is_file(), f"{workflow.name} installs {lock}, which does not exist"
+    for lock in set(re.findall(r"requirements(?:-frozen)?/requirements-[\w.\-]+\.txt", text)):
+        assert (ROOT / ".github" / lock).is_file(), f"{workflow.name} installs {lock}, which does not exist"
 
 
 def test_dependabot_updates_the_locks_with_uv():
@@ -133,7 +135,7 @@ def test_locks_record_the_command_dependabot_runs_again(lock):
 def test_locks_dependabot_maintains_pin_each_package_once(lock):
     # Dependabot takes one version as the current one and checks the newest can be pinned for
     # every Python the lock covers: a package locked once per Python is reported as an error.
-    # Such a lock belongs in frozen/, which it does not look at.
+    # Such a lock belongs in requirements-frozen/, which it does not scan.
     pins = [line for line in lock.read_text(encoding="utf-8").splitlines()
             if re.match(r"^[A-Za-z0-9_.\-]+(\[[^\]]*\])?==", line)]
     names = [re.match(r"^([A-Za-z0-9_.\-]+)", line).group(1).lower() for line in pins]
@@ -141,9 +143,14 @@ def test_locks_dependabot_maintains_pin_each_package_once(lock):
     assert not twice, f"{lock.name} pins {twice} more than once: it cannot be maintained by Dependabot"
 
 
-def test_dependabot_does_not_look_in_the_frozen_folder():
-    text = (ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8")
-    assert not re.search(r"directory:\s*/\.github/requirements/frozen", text)
+def test_the_folder_dependabot_scans_has_no_subfolders():
+    # Dependabot fetches the subfolders of the folder it is given, not only its files: it found the
+    # frozen lock in requirements/frozen/ and tried to bump its pins. A lock it must not maintain
+    # lives next to the folder, as requirements-frozen/ does.
+    subfolders = [p.name for p in REQUIREMENTS.iterdir() if p.is_dir() and p.name != "__pycache__"]
+    assert not subfolders, f".github/requirements/ has subfolders {subfolders}: Dependabot would scan them"
+    assert not re.search(r"directory:\s*/\.github/requirements-frozen",
+                         (ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8"))
 
 
 def test_each_python_of_the_matrix_has_the_right_test_lock():
@@ -155,7 +162,7 @@ def test_each_python_of_the_matrix_has_the_right_test_lock():
     lowest = int(re.search(r"--python-version\s+3\.(\d+)", header).group(1))
     for version in versions:
         if int(version.split(".")[1]) < lowest:
-            assert frozen.get(version) == "frozen/requirements-test.txt", f"Python {version} needs the frozen lock"
+            assert frozen.get(version) == "requirements-frozen/requirements-test.txt", f"Python {version} needs the frozen lock"
         else:
             assert version not in frozen, f"Python {version} is covered by requirements-test.txt"
 
@@ -165,17 +172,17 @@ def test_the_frozen_lock_is_a_complete_lock():
     # from there up: that is what lets a Python be retired to it without touching it, and what a
     # copy of the live lock (compiled for a newer Python) would lose.
     oldest = re.search(r"python_requires\s*=\s*['\"]>=3\.(\d+)", read("setup.py")).group(1)
-    lock = REQUIREMENTS / "frozen" / "requirements-test.txt"
+    lock = FROZEN / "requirements-test.txt"
     header = "\n".join(lock.read_text(encoding="utf-8").splitlines()[:3])
     assert re.search(rf"--python-version\s+3\.{oldest}\b", header), \
-        f"frozen/requirements-test.txt has to be compiled for Python 3.{oldest}, the oldest the package supports"
+        f"requirements-frozen/requirements-test.txt has to be compiled for Python 3.{oldest}, the oldest the package supports"
 
 
 def test_the_live_and_the_frozen_test_requirements_ask_for_the_same_tools():
     def tools(path):
-        lines = (REQUIREMENTS / path).read_text(encoding="utf-8").splitlines()
+        lines = path.read_text(encoding="utf-8").splitlines()
         return sorted(line.strip() for line in lines if line.strip() and not line.startswith("#"))
-    assert tools("requirements-test.in") == tools("frozen/requirements-test.in")
+    assert tools(REQUIREMENTS / "requirements-test.in") == tools(FROZEN / "requirements-test.in")
 
 
 def test_there_are_ci_requirements():

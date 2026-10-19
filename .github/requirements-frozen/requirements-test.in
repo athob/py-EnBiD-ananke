@@ -11,8 +11,11 @@
 #
 # Dependabot cannot maintain a lock like this one: it takes one of the versions of a package as
 # "the current one", then checks that the newest can be pinned for every Python the lock covers,
-# which cannot be (pytest 9 needs Python 3.10 or later), and reports an error. So this folder is
-# not one of Dependabot's (see dependabot.yml). `bash .github/requirements/update.sh --upgrade`
-# refreshes it when that is worth it: uv gives each Python the newest version it supports.
+# which cannot be (pytest 9 needs Python 3.10 or later), and reports an error. So this folder
+# is not one of its own (see dependabot.yml), and it is next to .github/requirements/ rather than
+# inside it: Dependabot also fetches the subfolders of the folder it is given, and it did
+# fetch this lock from there, tried to bump its Python 3.9 pins, and failed.
+# `bash .github/requirements/update.sh --upgrade` refreshes it when that is worth it: uv gives
+# each Python the newest version it supports.
 pytest
 pytest-cov
