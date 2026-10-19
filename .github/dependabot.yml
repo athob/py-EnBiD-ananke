@@ -25,3 +25,20 @@ updates:
     groups:
       github-actions:
         patterns: ["*"]
+
+  # The tools the CI and CD workflows install are locked, with hashes, in
+  # .github/requirements/: update.sh writes each requirements-X.txt from the
+  # requirements-X.in next to it. Dependabot proposes the newer versions, with the hashes
+  # of their files; `bash .github/requirements/update.sh --upgrade` does the same by hand.
+  - package-ecosystem: pip
+    directory: /.github/requirements
+    target-branch: develop
+    schedule:
+      interval: weekly
+      day: tuesday
+      time: "06:00"
+      timezone: America/New_York
+    open-pull-requests-limit: 5
+    groups:
+      ci-tools:
+        patterns: ["*"]
