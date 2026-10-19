@@ -6,8 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 the project follows [Semantic Versioning](https://semver.org/) as far as `0.x` allows:
 anything may change between minor versions. A section is written for every release
 when it is made; those below were written afterwards, from the release notes and the
-history. Versions before 0.2.0 were pre-releases: see their tags and release notes on
-[GitHub](https://github.com/athob/py-EnBiD-ananke/releases).
+history. The package did not start with 0.2.0: it had been in development since March
+2022, in pre-releases that are summarized at the bottom, under
+[Before 0.2.0](#before-020).
 
 ## [Unreleased]
 
@@ -132,6 +133,50 @@ history. Versions before 0.2.0 were pre-releases: see their tags and release not
 ### Changed
 
 - The version is now derived from the git tags by versioneer.
+
+## Before 0.2.0
+
+py-EnBiD-ananke was in development long before 0.2.0: the repository dates from March
+2022, and the versions below are pre-releases, tagged while the package was taking shape
+and not documented as they were made. What follows is a rough history, put together
+afterwards from the commit history: the dates are those of the tagged commits, and the
+descriptions are far from exhaustive. By December 2022 the work was already organized
+around the `develop`, `main` and `stable` branches, as it still is.
+
+### Alpha versions, 2022-2023
+
+- `v0.0.0-alpha`, 2022-06-02: the first implementation of the wrapper, with an example
+  notebook.
+- `v0.0.1-alpha`, 2022-12-14: `pathlib` in place of `os`, the constants in a module of
+  their own, an `ngb` argument added to the `enbid` function and tidier dependencies in
+  `setup.py` (all from June 2022), then updates to the README and the metadata.
+- `v0.0.2-alpha`, 2023-02-15: docstrings, a fix of the package installation, and a
+  warning against a potential cause of a C++ segmentation fault.
+- `v0.0.3-alpha`, 2023-03-21: attempts at fixing an issue with `/dev/tty`.
+- `v0.1.0-alpha`, 2023-04-07, and `v0.1.1-alpha`, 2023-04-12: a change of name, and the
+  repository URL that goes with it.
+- `v0.1.2-alpha`, 2023-07-02: a choice of the type of kernel, and more control over the
+  parameters in EnBiD's parameter file.
+
+### Beta versions, 2023-2024
+
+- `v0.1.2-beta`, 2023-08-25: a more accurate requirement on the Python version, and the
+  move to beta versioning.
+- `v0.1.2-beta2`, 2023-08-29: the first GitHub Actions workflow, with the unsupported
+  Python versions removed from it.
+- `v0.1.3-beta`, 2023-11-23: a `utils.py` module, an improved parameter file template and
+  documentation, a fix for data that is not centered, flake8 linting in the workflow, a
+  `CONSTANTS` singleton so that some constants can be changed on the fly, a verbose
+  option that controls the output of the subprocess, and the first tests.
+- `v0.2.0-beta`, 2024-08-16, and `v0.2.0-beta2`, 2024-08-21: the first Sphinx
+  documentation, on Read the Docs.
+- `v0.2.0b3`, 2024-09-01: versioneer added.
+
+Nothing was tagged between `v0.1.3-beta` (November 2023) and `v0.2.0-beta` (August 2024),
+but the work went on: the commits of those months pin the versions of the dependencies,
+use `setuptools` in place of `distutils`, reorganize the metadata, the constants and the
+utilities, revise the way the particles are centered on the most clustered structure in
+the data, and start the caching work, which was released in 0.2.1.
 
 [Unreleased]: https://github.com/athob/py-EnBiD-ananke/compare/v0.3.3...develop
 [0.3.3]: https://github.com/athob/py-EnBiD-ananke/compare/v0.3.2...v0.3.3

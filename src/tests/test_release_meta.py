@@ -106,3 +106,10 @@ def test_every_released_version_of_the_real_changelog_can_be_released():
     assert versions
     for version in versions:
         assert release_meta.release_section(version, text)
+
+
+def test_the_notes_of_0_2_0_stop_before_the_history_that_precedes_it():
+    text = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    notes = release_meta.release_section("0.2.0", text)
+    assert "versioneer" in notes
+    assert "alpha" not in notes and "Before 0.2.0" not in notes

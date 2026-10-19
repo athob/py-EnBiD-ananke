@@ -134,3 +134,11 @@ def test_changelog_format():
         assert re.fullmatch(r" - \d{4}-\d{2}-\d{2}", rest), f"[{name}] needs '## [{name}] - YYYY-MM-DD'"
     links = set(re.findall(r"^\[([^\]]+)\]:\s", text, flags=re.MULTILINE))
     assert set(names) <= links, f"no link at the bottom for: {sorted(set(names) - links)}"
+
+
+def test_changelog_tells_what_came_before_0_2_0():
+    # the package did not start with 0.2.0, and the changelog must not read as if it did
+    text = read("CHANGELOG.md")
+    assert re.search(r"^## Before 0\.2\.0$", text, flags=re.MULTILINE)
+    for tag in ("v0.0.0-alpha", "v0.1.3-beta", "v0.2.0b3"):
+        assert tag in text
