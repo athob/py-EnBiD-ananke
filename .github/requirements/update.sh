@@ -21,7 +21,7 @@ lock() {  # lock NAME LOWEST_PYTHON [FOLDER]
     --universal --generate-hashes --python-version "$2" ${upgrade[@]+"${upgrade[@]}"})
 }
 lock lint 3.12
-lock test 3.8
+lock test 3.11   # the Pythons still supported: one version per package, which Dependabot needs
 lock test 3.8 frozen   # the end-of-life Pythons: Dependabot does not look in frozen/
 lock package 3.12
 lock docs 3.12
