@@ -1,0 +1,4 @@
+# What the install job installs to run the tests, for every Python version of its matrix
+# (ci.yml). The lock therefore differs from one Python to another where it has to.
+pytest
+pytest-cov

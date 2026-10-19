@@ -1,0 +1,3 @@
+# What the docs job builds the documentation with (ci.yml): the same list as Read the Docs
+# is given, which does not pin it.
+-r ../../docs/source/requirements.txt

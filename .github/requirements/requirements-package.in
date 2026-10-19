@@ -1,0 +1,3 @@
+# What the package job builds and checks the distributions with (ci.yml).
+build
+twine
