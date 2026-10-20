@@ -115,6 +115,32 @@ versions; it needs [uv](https://docs.astral.sh/uv/)), then commit the `.txt` fil
 The same script writes the checksum the actionlint download is checked against: run it
 again whenever `ACTIONLINT_VERSION` changes in `ci.yml`.
 
+Scorecard also lists a few findings that are accepted rather than fixed, each for a reason:
+
+- **Code-Review**: there is one maintainer, so nobody else is there to review a change.
+- **Fuzzing**: the package is a thin wrapper, and the C++ it builds, EnBiD, is third-party.
+- **Pinned-Dependencies, the `pip install .` lines of `ci.yml`**: they install this
+  repository itself, which cannot be pinned by hash.
+- **Vulnerabilities, pytest in the frozen test lock**:
+  [PYSEC-2026-1845](https://osv.dev/PYSEC-2026-1845) affects every pytest before 9.0.3,
+  which needs Python 3.10 or later, so the lock for Python 3.8 and 3.9 cannot have the fix.
+  It only matters when the tests run on a machine shared with other users (it is about
+  pytest's temporary directories in `/tmp`), and it goes away with the support of those
+  Pythons.
+
+An alert is identified by the place it is raised at, so a dismissed one comes back as a new
+alert when a change moves its line. Check the list of open alerts first, then dismiss the
+`pip install .` ones again with:
+
+```bash
+gh api "repos/athob/py-EnBiD-ananke/code-scanning/alerts?state=open&per_page=100" \
+  --jq '.[] | select(.rule.id == "PinnedDependenciesID") | .number' | while read -r n; do
+  gh api -X PATCH "repos/athob/py-EnBiD-ananke/code-scanning/alerts/$n" -f state=dismissed \
+    -f dismissed_reason="won't fix" \
+    -f dismissed_comment="Installs this repository itself, which cannot be pinned by hash."
+done
+```
+
 If CI fails on one Python version only, it is usually a real incompatibility
 rather than bad luck.
 
