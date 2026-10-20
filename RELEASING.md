@@ -30,6 +30,38 @@ keeps them as the `python-package-distributions` artifact; it publishes nothing,
 branch or tag. GitHub only offers this for a workflow whose trigger is on the default
 branch, so `main` has to have it first.
 
+## The build image
+
+The wheel is built in the `manylinux2014` image (`quay.io/pypa/manylinux2014_x86_64`), which
+gives it the widest compatibility there is: the tags `manylinux2014` and `manylinux_2_17`, so
+any Linux with glibc 2.17 or newer. PyPA's support for that image ends on **2027-05-04**:
+until then it still gets updates, and after that it does not.
+
+What the end of support does and does not mean:
+
+- A wheel that is already on PyPI stays there, and pip keeps installing it on every system its
+  tag allows, new systems included: a `manylinux2014` wheel is not tied to the image that built
+  it, and old tags keep working on newer systems.
+- Only the builds made after that date are affected: they would have to move to a newer image.
+
+The cost of moving was measured in October 2026, with the manual build on a branch. The platform
+tag comes from the glibc symbol versions the compiled executables need (`auditwheel show` prints
+them in the log of the build), not from the name of the image:
+
+| Image            | `libm.so.6` needs           | Tags of the wheel                  |
+|------------------|-----------------------------|------------------------------------|
+| `manylinux2014`  | `GLIBC_2.2.5`               | `manylinux2014`, `manylinux_2_17`  |
+| `manylinux_2_28` | `GLIBC_2.2.5`, `GLIBC_2.27` | `manylinux_2_27`, `manylinux_2_28` |
+
+So building in `manylinux_2_28` makes the wheel need glibc 2.27 instead of 2.17, because of the
+version of some `libm` functions: everything else is equal. Systems with an older glibc (RHEL and
+CentOS 7, Debian 9, Ubuntu 16.04) would install the sdist instead, and compile EnBiD themselves.
+
+The plan is to keep building in `manylinux2014` while it is supported, and to move before
+2027-05-04: change the image and the name of the step in `cd.yml`, after trying it with a manual
+build on a branch (`gh workflow run cd.yml --ref BRANCH`) and reading the `auditwheel show` and
+`New filename tags` lines of its log again, in case the answer has changed.
+
 ## Steps
 
 1. Everything for the release is on `develop`, and the CI run of that commit is green
