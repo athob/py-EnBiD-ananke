@@ -163,7 +163,8 @@ def test_each_python_of_the_matrix_has_the_right_test_lock():
     lowest = int(re.search(r"--python-version\s+3\.(\d+)", header).group(1))
     for version in versions:
         if int(version.split(".")[1]) < lowest:
-            assert frozen.get(version) == "requirements-frozen/requirements-test.txt", f"Python {version} needs the frozen lock"
+            assert frozen.get(version) == "requirements-frozen/requirements-test.txt", \
+                f"Python {version} needs the frozen lock"
         else:
             assert version not in frozen, f"Python {version} is covered by requirements-test.txt"
 
