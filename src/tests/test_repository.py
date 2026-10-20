@@ -241,6 +241,16 @@ def test_the_openssf_badge_names_one_project_everywhere():
         assert set(pattern.findall(read(name))) <= {OPENSSF_PROJECT}, f"{name} names another badge entry"
 
 
+def test_the_classifiers_list_every_supported_python():
+    # the Pythons the package declares, the ones CI tests, and the ones PyPI is told about agree
+    classified = set(re.findall(r'"Programming Language :: Python :: (3\.\d+)"', read("src/enbid_ananke/__metadata__.py")))
+    bounds = re.search(r"python_requires\s*=\s*['\"]>=3\.(\d+),\s*<3\.(\d+)", read("setup.py"))
+    supported = {f"3.{minor}" for minor in range(int(bounds.group(1)), int(bounds.group(2)))}
+    ci = read(".github/workflows/ci.yml")
+    tested = set(re.findall(r'"(3\.\d+)"', re.search(r"python-version:\s*\[([^\]]*)\]", ci).group(1)))
+    assert classified == supported == tested, (sorted(classified), sorted(supported), sorted(tested))
+
+
 def test_the_license_is_said_the_same_way_everywhere():
     assert json.loads(read(".zenodo.json"))["license"] == "GPL-2.0-or-later"
     assert re.search(r"^license: GPL-2.0-or-later$", read("CITATION.cff"), flags=re.MULTILINE)
