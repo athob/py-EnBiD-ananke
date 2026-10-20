@@ -56,7 +56,7 @@ The workflow then runs these jobs, and stops at the first one that fails:
    `CHANGELOG.md` has to have its dated section. This is the reason to write the
    changelog first: nothing is built or published without it.
 2. **Build**: for a pre-release, waits for the CI run of the tagged commit to succeed;
-   then builds the sdist and the wheel inside a manylinux2014 container, and repairs the
+   then builds the sdist and the wheel inside a manylinux_2_28 container, and repairs the
    wheel with auditwheel.
 3. **TestPyPI**, then, for a release only, **PyPI**.
 4. **GitHub release**, for a release only: its notes are the changelog section, and

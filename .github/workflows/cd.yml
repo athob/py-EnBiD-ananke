@@ -95,7 +95,7 @@ jobs:
           echo "Still waiting (current status: $STATUS)... retry in ${INTERVAL}s"
           sleep "$INTERVAL"
         done
-    - name: Build distributions inside manylinux2014 container
+    - name: Build distributions inside manylinux_2_28 container
       run: |
         # Create a directory on the host to store the built artifacts
         mkdir -p dist
@@ -104,7 +104,7 @@ jobs:
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
           -w /workspace \
-          quay.io/pypa/manylinux2014_x86_64 \
+          quay.io/pypa/manylinux_2_28_x86_64 \
           bash -c "
             # Stop at the first command that fails: without this, the exit status of the step is that
             # of the last one (the rm below), and a failed build or repair would go unnoticed
