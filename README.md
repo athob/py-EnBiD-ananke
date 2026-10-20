@@ -43,7 +43,7 @@ If you use py-EnBiD-ananke in your work, please cite, in this order:
 
 ## Contributing
 
-Contributions are welcome: see [CONTRIBUTING.md](https://github.com/athob/py-EnBiD-ananke/blob/main/CONTRIBUTING.md), and the [code of conduct](https://github.com/athob/py-EnBiD-ananke/blob/main/CODE_OF_CONDUCT.md). Please report security problems privately, as described in [SECURITY.md](https://github.com/athob/py-EnBiD-ananke/blob/main/SECURITY.md).
+Bug reports and feature requests go to the [issue tracker](https://github.com/athob/py-EnBiD-ananke/issues), which has a form for each. Contributions are welcome: see [CONTRIBUTING.md](https://github.com/athob/py-EnBiD-ananke/blob/main/CONTRIBUTING.md), and the [code of conduct](https://github.com/athob/py-EnBiD-ananke/blob/main/CODE_OF_CONDUCT.md). Please report security problems privately, as described in [SECURITY.md](https://github.com/athob/py-EnBiD-ananke/blob/main/SECURITY.md).
 
 ## License
 
