@@ -5,6 +5,7 @@
 [![Documentation Status](https://readthedocs.org/projects/py-enbid-ananke/badge/?version=latest)](https://py-enbid-ananke.readthedocs.io/en/latest/?badge=latest)
 [![DOI](https://zenodo.org/badge/473607925.svg)](https://zenodo.org/badge/latestdoi/473607925)
 [![License](https://img.shields.io/badge/license-GPL--2.0--or--later-blue.svg)](https://github.com/athob/py-EnBiD-ananke/blob/main/LICENSE)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15711/badge)](https://www.bestpractices.dev/projects/15711)
 [![Slack](https://img.shields.io/badge/slack-chat-green.svg)](https://join.slack.com/t/ananke-users/shared_invite/zt-37wmyn7ki-kmroxUul2W_VdFlEt0qCig)
 
 Python wrapper for EnBiD ([Sharma & Steinmetz 2011](http://ascl.net/1109.012)), to be used by [py-ananke](https://github.com/athob/py-ananke).

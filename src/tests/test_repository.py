@@ -30,6 +30,7 @@ WORKFLOWS = sorted((ROOT / ".github" / "workflows").glob("*.yml"))
 
 ZENODO_DOI = "10.5281/zenodo.13937082"   # all versions of this package
 JOSS_DOI = "10.21105/joss.06234"         # the py-ananke article
+OPENSSF_PROJECT = "15711"                # the OpenSSF Best Practices badge entry
 
 
 def read(path):
@@ -218,6 +219,17 @@ def test_the_dois_agree():
     assert ZENODO_DOI in readme and JOSS_DOI in readme
     related = json.loads(read(".zenodo.json"))["related_identifiers"]
     assert any(item["identifier"] == JOSS_DOI for item in related)
+
+
+def test_the_openssf_badge_names_one_project_everywhere():
+    pattern = re.compile(r"bestpractices\.dev/projects/(\d+)")
+    readme = read("README.md")
+    # the image and the page it opens are the same entry, and the other documents agree with it
+    assert (f"(https://www.bestpractices.dev/projects/{OPENSSF_PROJECT}/badge)]"
+            f"(https://www.bestpractices.dev/projects/{OPENSSF_PROJECT})") in readme
+    assert set(pattern.findall(readme)) == {OPENSSF_PROJECT}
+    for name in ("CONTRIBUTING.md", "SECURITY.md", "RELEASING.md"):
+        assert set(pattern.findall(read(name))) <= {OPENSSF_PROJECT}, f"{name} names another badge entry"
 
 
 def test_the_license_is_said_the_same_way_everywhere():

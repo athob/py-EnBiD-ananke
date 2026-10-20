@@ -25,6 +25,8 @@ history. The package did not start with 0.2.0: it had been in development since 
   and check of the sdist and the wheel, and a build of the documentation. CI also runs
   on pull requests, every week and on demand.
 - A README that gives the installation requirements and says how to cite the package.
+- The OpenSSF Best Practices badge, shown in the README. The entry is in progress: the passing
+  level is not reached yet.
 - CodeQL code scanning of the Python source, and the OpenSSF Scorecard of the repository.
 - Tests of the repository files (the DOIs and the license wording agree, the actions are pinned,
   the changelog has its format) and of the release script.
