@@ -1,5 +1,5 @@
 # What the CD workflow builds the sdist and the wheel with, inside the manylinux container
-# (cd.yml), whose Python is 3.10. These produce what gets published, so they are pinned too.
+# (cd.yml), whose Python is 3.12. These produce what gets published, so they are pinned too.
 pip
 build
 auditwheel

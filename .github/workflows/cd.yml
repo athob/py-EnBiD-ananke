@@ -110,8 +110,9 @@ jobs:
             yum install -y git
             # Trust the workspace directory (avoid dubious ownership error)
             git config --global --add safe.directory /workspace
-            # Set up Python (use 3.10 from the manylinux image, choose a version you support)
-            export PATH=/opt/python/cp310-cp310/bin:\$PATH
+            # Set up Python: 3.12 from the manylinux image (the lock of the tools below is compiled for it)
+            export PATH=/opt/python/cp312-cp312/bin:\$PATH
+            python --version || { echo 'No Python 3.12 in this image'; exit 1; }
             # Install the build tools: pinned, with hashes (see .github/requirements/)
             python -m pip install --require-hashes -r .github/requirements/requirements-cd-build.txt
             # Build the distribution (sdist + wheel)

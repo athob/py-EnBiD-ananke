@@ -49,6 +49,8 @@ history. The package did not start with 0.2.0: it had been in development since 
 - The `CI/CD` workflow is now two: `CI` and `CD`. `stable` is moved forward to a commit
   that passed CI by a fast-forward, the actions are pinned to commit SHAs, and the
   workflows only get the permissions they need.
+- The CD workflow builds with Python 3.12 inside its container, Python 3.10 having reached
+  its end of life.
 
 ### Fixed
 

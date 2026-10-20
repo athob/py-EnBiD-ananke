@@ -25,7 +25,7 @@ lock test 3.11   # the Pythons still supported: one version per package, which D
 lock test 3.8 ../requirements-frozen   # the end-of-life Pythons, where Dependabot does not look
 lock package 3.12
 lock docs 3.12
-lock cd-build 3.10
+lock cd-build 3.12
 
 # actionlint is not a Python package. Its version is ACTIONLINT_VERSION in ci.yml; the sha256
 # of its release archive is kept here, and ci.yml refuses a download that does not match it.
