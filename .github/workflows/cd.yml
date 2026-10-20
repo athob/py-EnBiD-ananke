@@ -106,6 +106,9 @@ jobs:
           -w /workspace \
           quay.io/pypa/manylinux2014_x86_64 \
           bash -c "
+            # Stop at the first command that fails: without this, the exit status of the step is that
+            # of the last one (the rm below), and a failed build or repair would go unnoticed
+            set -e
             # Install git (required by versioneer)
             yum install -y git
             # Trust the workspace directory (avoid dubious ownership error)
