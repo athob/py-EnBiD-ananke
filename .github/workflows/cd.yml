@@ -120,6 +120,9 @@ jobs:
             python -m pip install --require-hashes -r .github/requirements/requirements-cd-build.txt
             # Build the distribution (sdist + wheel)
             python -m build
+            # Show which glibc symbol versions the compiled executables need: that decides the platform
+            # tag the wheel gets, not the name of the image (this only informs, it cannot fail the build)
+            auditwheel show dist/*.whl || true
             # Repair the wheel
             auditwheel repair dist/*.whl -w dist/
             # Remove the original pure-Python wheel (it's now replaced by the repaired one)
