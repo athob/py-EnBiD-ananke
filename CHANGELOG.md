@@ -3,8 +3,9 @@
 All notable changes to py-EnBiD-ananke are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
-the project follows [Semantic Versioning](https://semver.org/) as far as `0.x` allows:
-anything may change between minor versions. A section is written for every release
+the project follows [Semantic Versioning](https://semver.org/). The major number is
+still `0`, so a minor version can still change the interface; a `1.0.0` release is
+planned. A section is written for every release
 when it is made; those below were written afterwards, from the release notes and the
 history. The package did not start with 0.2.0: it had been in development since March
 2022, in pre-releases that are summarized at the bottom, under

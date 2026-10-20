@@ -176,10 +176,13 @@ rather than bad luck.
 
 The package version is not written down anywhere in the source: versioneer
 derives it from the git tags, which start with `v` (`v0.3.3`). Version numbers
-follow [Semantic Versioning](https://semver.org/), and while the major number is
-`0` anything may change between minor versions. Pre-releases are written the
-Python way ([PEP 440](https://peps.python.org/pep-0440/)): `v0.3.4a1`,
-`v0.3.4b1`, `v0.3.4rc0`, `v0.3.4.dev1`.
+follow [Semantic Versioning](https://semver.org/). The major number is still `0`,
+although the package has long been marked Production/Stable on PyPI, and a `1.0.0`
+release is planned. Until then Semantic Versioning still lets a minor version change
+the interface, and the changelog says so when one does (as it did for 0.3.0).
+Pre-releases are written the Python way
+([PEP 440](https://peps.python.org/pep-0440/)): `v0.3.4a1`, `v0.3.4b1`, `v0.3.4rc0`,
+`v0.3.4.dev1`.
 
 ## Releasing (maintainer)
 
