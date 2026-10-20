@@ -78,10 +78,9 @@ jobs:
 - **package**: builds the sdist and the wheel the way a release would, then runs
   `twine check --strict` and `.github/scripts/check_dist.py`: the EnBiD executables
   have to be in the wheel, and be executable.
-- **docs**: builds the documentation, as Read the Docs does. For now it is only
-  informative: a failure shows up in red, but does not stop `stable` from moving.
-- **promote**: on a push to `develop`, once lint, workflows, install and package have
-  passed, moves `stable` forward to that commit.
+- **docs**: builds the documentation, as Read the Docs does.
+- **promote**: on a push to `develop`, once all the jobs above have passed, moves `stable`
+  forward to that commit.
 
 Apart from CI, two workflows report to Security > Code scanning: **CodeQL** (code
 scanning; on `develop`, on pull requests and every Wednesday) and **Scorecard**

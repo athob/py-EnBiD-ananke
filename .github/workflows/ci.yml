@@ -152,8 +152,8 @@ jobs:
 
   docs:
     name: Build the documentation
-    # Not in the `needs` of promote (yet): a broken build shows here, red, without
-    # holding stable back. Read the Docs does the same build (.readthedocs.yaml).
+    # A documentation that does not build holds stable back, like the other jobs do.
+    # Read the Docs does the same build (.readthedocs.yaml).
     # A pull request from a branch of this repository is already covered by the
     # push to that branch: only those from forks need to run here.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
@@ -181,7 +181,7 @@ jobs:
     # This is a fast-forward by construction: git refuses to push SHA to stable
     # unless stable is an ancestor of SHA, so stable is always exactly a commit
     # that passed CI, and no merge commit (or git identity) is ever needed.
-    needs: [lint, workflows, install, package]
+    needs: [lint, workflows, install, package, docs]
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     permissions:

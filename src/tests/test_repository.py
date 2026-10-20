@@ -78,6 +78,14 @@ def test_workflows_set_their_permissions(workflow):
         f"{workflow.name} has no top-level `permissions:`: the token would get the repository default"
 
 
+def test_promote_waits_for_every_other_job_of_ci():
+    # a job added to ci.yml and forgotten in promote's needs would not hold stable back
+    ci = read(".github/workflows/ci.yml")
+    jobs = re.findall(r"^  ([a-z][\w-]*):\s*$", ci.split("\njobs:\n", 1)[1], flags=re.MULTILINE)
+    needs = re.search(r"^  promote:.*?^    needs:\s*\[([^\]]*)\]", ci, flags=re.MULTILINE | re.DOTALL).group(1)
+    assert set(jobs) - {"promote"} == {name.strip() for name in needs.split(",")}
+
+
 def test_cd_waits_for_a_workflow_that_exists():
     match = re.search(r'WORKFLOW_FILE="([^"]+)"', read(".github/workflows/cd.yml"))
     assert match, "the CD workflow no longer says which workflow it waits for"
