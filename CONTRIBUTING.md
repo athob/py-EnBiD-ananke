@@ -122,8 +122,9 @@ Scorecard also lists a few findings that are accepted rather than fixed, each fo
 - **Pinned-Dependencies, the `pip install .` lines of `ci.yml`**: they install this
   repository itself, which cannot be pinned by hash.
 - **Vulnerabilities, pytest in the frozen test lock**:
-  [PYSEC-2026-1845](https://osv.dev/PYSEC-2026-1845) affects every pytest before 9.0.3,
-  which needs Python 3.10 or later, so the lock for Python 3.8 and 3.9 cannot have the fix.
+  [PYSEC-2026-1845](https://osv.dev/PYSEC-2026-1845) (CVE-2025-71176, GHSA-6w46-j5rx-g56g)
+  affects every pytest before 9.0.3, which needs Python 3.10 or later, so the lock for Python
+  3.8 and 3.9 cannot have the fix.
   It only matters when the tests run on a machine shared with other users (it is about
   pytest's temporary directories in `/tmp`), and it goes away with the support of those
   Pythons.
@@ -139,6 +140,16 @@ gh api "repos/athob/py-EnBiD-ananke/code-scanning/alerts?state=open&per_page=100
     -f dismissed_reason="won't fix" \
     -f dismissed_comment="Installs this repository itself, which cannot be pinned by hash."
 done
+```
+
+Dependabot raises the same pytest advisory as an alert of its own, against the frozen lock.
+Dismiss it as a tolerable risk, so that it does not try to open a security update for a lock
+that cannot take one:
+
+```bash
+gh api -X PATCH repos/athob/py-EnBiD-ananke/dependabot/alerts/1 -f state=dismissed \
+  -f dismissed_reason=tolerable_risk \
+  -f dismissed_comment="Test-time only. The fix needs Python 3.10 or later: see CONTRIBUTING.md."
 ```
 
 If CI fails on one Python version only, it is usually a real incompatibility
