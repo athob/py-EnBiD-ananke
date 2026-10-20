@@ -86,6 +86,17 @@ def test_promote_waits_for_every_other_job_of_ci():
     assert set(jobs) - {"promote"} == {name.strip() for name in needs.split(",")}
 
 
+def test_cd_publishes_only_on_a_push():
+    # the workflow can also be run by hand, to try a build out: that must never publish anything
+    cd = read(".github/workflows/cd.yml")
+    jobs = dict(re.findall(r"^  ([a-z][\w-]*):\s*\n(.*?)(?=^  [a-z][\w-]*:\s*\n|\Z)",
+                           cd.split("\njobs:\n", 1)[1], flags=re.MULTILINE | re.DOTALL))
+    for name in ("publish-to-testpypi", "publish-to-pypi", "github-release"):
+        condition = re.search(r"^    if:(.*)$", jobs[name], flags=re.MULTILINE)
+        assert condition and "github.event_name == 'push'" in condition.group(1), \
+            f"{name} has to run only on a push: a run by hand must not publish"
+
+
 def test_cd_waits_for_a_workflow_that_exists():
     match = re.search(r'WORKFLOW_FILE="([^"]+)"', read(".github/workflows/cd.yml"))
     assert match, "the CD workflow no longer says which workflow it waits for"

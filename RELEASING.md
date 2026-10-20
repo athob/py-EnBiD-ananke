@@ -20,6 +20,16 @@ workflow, so that nothing that is not a clean release can reach PyPI. Developmen
 are for trying the pipeline out. TestPyPI refuses a file name it has already seen, even
 after deleting it, so every try needs a new number (`.dev1`, `.dev2`, ...).
 
+## Trying the build
+
+To try a change to the build (the image it runs in, the Python it builds with) without
+publishing anything, run the CD workflow by hand: from the Actions tab, or with
+`gh workflow run cd.yml --ref BRANCH`. It builds the sdist and the wheel, lists them in the
+summary of the run (the platform tag of the wheel says which systems it installs on) and
+keeps them as the `python-package-distributions` artifact; it publishes nothing, on any
+branch or tag. GitHub only offers this for a workflow whose trigger is on the default
+branch, so `main` has to have it first.
+
 ## Steps
 
 1. Everything for the release is on `develop`, and the CI run of that commit is green
