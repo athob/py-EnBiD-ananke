@@ -251,6 +251,16 @@ def test_the_classifiers_list_every_supported_python():
     assert classified == supported == tested, (sorted(classified), sorted(supported), sorted(tested))
 
 
+def test_the_documents_state_the_supported_python_range():
+    # the range in setup.py is the one the README and the contributing guide give
+    bounds = re.search(r"python_requires\s*=\s*['\"]>=3\.(\d+),\s*<3\.(\d+)", read("setup.py"))
+    first, last = bounds.group(1), int(bounds.group(2)) - 1
+    assert f"Python 3.{first} to 3.{last}, on a Unix system" in read("README.md")
+    contributing = read("CONTRIBUTING.md")
+    assert f"each Python version from 3.{first} to 3.{last}, installs" in contributing
+    assert f"(currently 3.{first} up to 3.{last})" in contributing
+
+
 def test_the_license_is_said_the_same_way_everywhere():
     assert json.loads(read(".zenodo.json"))["license"] == "GPL-2.0-or-later"
     assert re.search(r"^license: GPL-2.0-or-later$", read("CITATION.cff"), flags=re.MULTILINE)

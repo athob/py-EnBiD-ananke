@@ -28,7 +28,8 @@ history. The package did not start with 0.2.0: it had been in development since 
 - A README that gives the installation requirements and says how to cite the package.
 - The OpenSSF Best Practices badge, shown in the README. The entry is in progress: the passing
   level is not reached yet.
-- The trove classifiers of PyPI name each supported Python version, 3.8 to 3.14.
+- The trove classifiers of PyPI name each supported Python version, 3.8 to 3.15.
+- Python 3.15 is supported, and tested by CI.
 - CodeQL code scanning of the Python source, and the OpenSSF Scorecard of the repository.
 - Tests of the repository files (the DOIs and the license wording agree, the actions are pinned,
   the changelog has its format) and of the release script.

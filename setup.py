@@ -37,7 +37,7 @@ setup(name=NAME,
       classifiers=__classifiers__,
       license=__license__,
       copyright=__copyright__,
-      python_requires='>=3.8,<3.15',
+      python_requires='>=3.8,<3.16',
       packages=setuptools.find_namespace_packages(
           SRC_DIR, exclude=['tests']),
       package_dir={'': SRC_DIR},
