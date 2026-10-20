@@ -97,6 +97,14 @@ def test_cd_publishes_only_on_a_push():
             f"{name} has to run only on a push: a run by hand must not publish"
 
 
+def test_the_cd_build_python_is_the_one_its_lock_is_compiled_for():
+    # the build tools are locked for one Python: the container has to run that one
+    python = re.search(r"/opt/python/cp(\d)(\d+)-cp\d+\S*/bin", read(".github/workflows/cd.yml"))
+    header = "\n".join((REQUIREMENTS / "requirements-cd-build.txt").read_text(encoding="utf-8").splitlines()[:3])
+    assert re.search(rf"--python-version\s+{python.group(1)}\.{python.group(2)}\b", header), \
+        f"cd.yml builds with Python {python.group(1)}.{python.group(2)}: run .github/requirements/update.sh"
+
+
 def test_cd_waits_for_a_workflow_that_exists():
     match = re.search(r'WORKFLOW_FILE="([^"]+)"', read(".github/workflows/cd.yml"))
     assert match, "the CD workflow no longer says which workflow it waits for"
