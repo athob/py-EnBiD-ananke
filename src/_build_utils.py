@@ -73,7 +73,7 @@ def all_files(*paths, basedir='.'):
 
 def verify_system_dependencies():
     try:
-        tar_version = Version(get_version_of_command("tar"))
+        Version(get_version_of_command("tar"))
     except FileNotFoundError:
         raise OSError("Your system does not have tar installed. Please install tar before proceeding")
     try:
