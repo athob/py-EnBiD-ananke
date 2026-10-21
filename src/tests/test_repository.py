@@ -22,6 +22,7 @@ library only, and nothing here needs EnBiD.
 import json
 import pathlib
 import re
+import warnings
 
 import pytest
 
@@ -278,6 +279,25 @@ def test_the_documents_state_the_supported_python_range():
     contributing = read("CONTRIBUTING.md")
     assert f"each Python version from 3.{first} to 3.{last}, installs" in contributing
     assert f"(currently 3.{first} up to 3.{last})" in contributing
+
+
+def test_python_sources_compile_without_warnings():
+    # An invalid escape sequence ("\s" in a plain string) is only a warning today: a DeprecationWarning, then
+    # a SyntaxWarning, and the one a future Python turns into an error. What versioneer generates is exempt.
+    exempt = {"versioneer.py", "_version.py"}
+    sources = (list((ROOT / "src").rglob("*.py")) + list((ROOT / ".github").rglob("*.py"))
+               + [ROOT / "setup.py", ROOT / "docs" / "source" / "conf.py"])
+    problems = []
+    for path in sources:
+        if path.is_symlink() or path.name in exempt or "Enbid-2.0" in path.parts or not path.is_file():
+            continue
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            try:
+                compile(path.read_text(encoding="utf-8"), str(path), "exec")
+            except Exception as error:
+                problems.append(f"{path.relative_to(ROOT)}: {error}")
+    assert not problems, problems
 
 
 def test_the_license_is_said_the_same_way_everywhere():
