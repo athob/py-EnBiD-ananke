@@ -26,10 +26,9 @@ How to use
 enbid_ananke comes with the function enbid, please refer to its documentation
 for further help.
 """
-from typing import Any, Optional, Union, Tuple, Dict
+from typing import Any, Optional, Union, Dict
 from numpy.typing import ArrayLike, NDArray
 import pathlib
-import warnings
 import hashlib
 import struct
 import numpy as np
