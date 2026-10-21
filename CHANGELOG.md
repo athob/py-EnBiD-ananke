@@ -55,6 +55,8 @@ history. The package did not start with 0.2.0: it had been in development since 
 ### Fixed
 
 - The Read the Docs build, which the renamed example notebook had broken.
+- Importing the package no longer prints a `SyntaxWarning` about invalid escape sequences on
+  recent Pythons: two regular expressions are now raw strings. Nothing else about them changes.
 
 ## [0.3.3] - 2026-08-10
 
