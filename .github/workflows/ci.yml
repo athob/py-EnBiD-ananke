@@ -91,11 +91,11 @@ jobs:
         # Dependabot does not maintain); the others, with requirements-test.txt.
         include:
           - python-version: "3.8"
-            os: ubuntu-22.04
             test-lock: requirements-frozen/requirements-test.txt
+            os: ubuntu-22.04
           - python-version: "3.9"
-            os: ubuntu-22.04
             test-lock: requirements-frozen/requirements-test.txt
+            os: ubuntu-22.04
           - python-version: "3.10"
             test-lock: requirements-frozen/requirements-test.txt
 
