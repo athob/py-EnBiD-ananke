@@ -82,7 +82,7 @@ jobs:
     # A pull request from a branch of this repository is already covered by the
     # push to that branch: only those from forks need to run here.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
@@ -91,8 +91,10 @@ jobs:
         # Dependabot does not maintain); the others, with requirements-test.txt.
         include:
           - python-version: "3.8"
+            os: ubuntu-22.04
             test-lock: requirements-frozen/requirements-test.txt
           - python-version: "3.9"
+            os: ubuntu-22.04
             test-lock: requirements-frozen/requirements-test.txt
           - python-version: "3.10"
             test-lock: requirements-frozen/requirements-test.txt
