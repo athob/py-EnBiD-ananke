@@ -73,8 +73,11 @@ jobs:
   files. You can run it locally too, and the pre-commit hook does so when it is
   installed.
 - **install**: for each Python version from 3.8 to 3.15, installs the package and
-  runs `pytest src`. The Python 3.12 run also reports the test coverage, in the
-  summary of the run.
+  runs `pytest src`. The Python 3.12 run also reports the test coverage, by lines and by
+  branches, in the summary of the run, and fails if it is under the floor (`fail_under` in
+  `pyproject.toml`). When the coverage rises, raise the floor; a change that lowers the
+  coverage needs a test, not a lower floor. The footer of the modules of the package (`if
+  __name__ == '__main__': raise NotImplementedError()`) is not counted: no test could run it.
 - **package**: builds the sdist and the wheel the way a release would, then runs
   `twine check --strict` and `.github/scripts/check_dist.py`: the EnBiD executables
   have to be in the wheel, and be executable.

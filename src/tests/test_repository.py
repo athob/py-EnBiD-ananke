@@ -322,6 +322,15 @@ def test_python_sources_compile_without_warnings():
     assert not problems, problems
 
 
+def test_the_coverage_has_a_floor_and_does_not_count_the_footers_of_the_modules():
+    pyproject = read("pyproject.toml")
+    report = pyproject.split("[tool.coverage.report]", 1)[1]
+    assert int(re.search(r"^fail_under\s*=\s*(\d+)\s*$", report, flags=re.MULTILINE).group(1)) >= 90
+    assert "if __name__ == .__main__.:" in report              # a footer that no test runs is not a missed line
+    # the floor is enforced by the report, after the table is written to the summary, and not by pytest
+    assert "--cov-fail-under=0" in read(".github/workflows/ci.yml")
+
+
 def test_the_license_is_said_the_same_way_everywhere():
     assert json.loads(read(".zenodo.json"))["license"] == "GPL-2.0-or-later"
     assert re.search(r"^license: GPL-2.0-or-later$", read("CITATION.cff"), flags=re.MULTILINE)

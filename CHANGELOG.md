@@ -39,7 +39,8 @@ history. The package did not start with 0.2.0: it had been in development since 
 - Tests of the tools that build EnBiD when the package is installed (the check of the system,
   the download, the configuring of the Makefile, the build, the package data), without a
   network or a compiler, and of the version of a command.
-- The test coverage is measured by branch too.
+- The test coverage is measured by branch too, without the footer of the modules of the package
+  that no test can run, and it has a floor of 95%: the Python 3.12 run of CI fails under it.
 - Tests of `enbid` with the real EnBiD, run when it is built (installing the package builds it):
   one finite density per particle, the same answer for the same input, no change when the data
   is moved as a whole, and a density that falls with the distance from the center of a cloud.
