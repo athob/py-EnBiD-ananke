@@ -33,6 +33,9 @@ history. The package did not start with 0.2.0: it had been in development since 
 - CodeQL code scanning of the Python source, and the OpenSSF Scorecard of the repository.
 - Tests of the repository files (the DOIs and the license wording agree, the actions are pinned,
   the changelog has its format) and of the release script.
+- Tests of every public function of the package, run against a stand-in for EnBiD: the GADGET
+  files it writes and reads, the hash of the input, the parameter file and its keywords, the
+  choice of the 3D or 6D executable, the caching, and `enbid` from end to end.
 - The CD workflow can be run by hand: it builds the distributions and publishes nothing.
 - A releasing guide. The CD workflow checks that `CHANGELOG.md` has the dated section of a
   release before building anything, and creates the GitHub release from that section.
