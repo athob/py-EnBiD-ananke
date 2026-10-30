@@ -120,6 +120,28 @@ def with_fake_enbid(func):
     return wrapped_func
 
 
+@contextlib.contextmanager
+def fake_commands(commands):
+    """
+    Makes the commands of the dictionary, and only them, available on the PATH until the end of the block:
+    each one prints its text (and exits with its status, if the value is a tuple of the text and the status),
+    whatever it is given. Needs a Unix system, like the package.
+    """
+    with tempfile.TemporaryDirectory() as directory:
+        for name, output in commands.items():
+            text, status = output if isinstance(output, tuple) else (output, 0)
+            quoted = text.replace("'", "'\\''")                          # printf is a builtin: no PATH needed
+            script = pathlib.Path(directory, name)
+            script.write_text(f"#!/bin/sh\nprintf '%s\\n' '{quoted}'\nexit {status}\n")
+            script.chmod(script.stat().st_mode | stat.S_IEXEC)
+        previous = os.environ['PATH']
+        os.environ['PATH'] = directory
+        try:
+            yield
+        finally:
+            os.environ['PATH'] = previous
+
+
 def read_paramfile(path):
     """The parameter file the wrapper wrote, as a dictionary of strings."""
     values = {}
