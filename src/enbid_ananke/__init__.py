@@ -93,14 +93,16 @@ def __compute_input_hash(points: NDArray,
     Returns
     -------
     digest : str
-        Hexadecimal SHA-256 digest of the concatenated input arrays.
+        Hexadecimal SHA-256 digest of the input arrays, each with its role,
+        its type and its shape: the bytes alone would be the same for
+        10 particles and for 5 particles with 5 velocities.
     """
-    hash_input = points.tobytes()
-    if velocities is not None:
-        hash_input += velocities.tobytes()
-    if mass is not None:
-        hash_input += mass.tobytes()
-    return hashlib.sha256(hash_input).hexdigest()
+    hasher = hashlib.sha256()
+    for role, array in (("points", points), ("velocities", velocities), ("mass", mass)):
+        if array is not None:
+            hasher.update(f"{role}|{array.dtype.str}|{array.shape}|".encode("ascii"))
+            hasher.update(array.tobytes())
+    return hasher.hexdigest()
 
 
 def write_gadget_file(filename: pathlib.Path, pos: NDArray, mass: NDArray, vel: Optional[NDArray] = None,

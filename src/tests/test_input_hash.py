@@ -20,7 +20,6 @@ tells whether what is there is still what was asked for (the caching).
 import re
 
 import numpy as np
-import pytest
 
 from ..enbid_ananke import __compute_input_hash, HASH_PREFIX_LEN
 
@@ -65,13 +64,33 @@ def test_the_precision_of_the_data_counts():
     assert __compute_input_hash(points) != __compute_input_hash(points.astype(np.float32))
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "The hash is of the bytes of the arrays one after the other, with nothing about their shapes: "
-    "10 particles, and 5 particles with 5 velocities, give the same hash. With caching, the second "
-    "run then finds the files of the first in the same folder and does not write its own."))
 def test_the_split_of_the_data_into_positions_and_velocities_counts():
+    # the same bytes, one after the other: 10 particles, or 5 particles and 5 velocities
     points = sample(10)
     assert __compute_input_hash(points) != __compute_input_hash(points[:5], points[5:])
+
+
+def test_the_shape_of_the_data_counts():
+    points = sample(10)
+    assert __compute_input_hash(points) != __compute_input_hash(points.reshape(5, 6))
+    assert __compute_input_hash(points) != __compute_input_hash(points.ravel())
+
+
+def test_velocities_that_are_empty_are_not_no_velocities():
+    points = sample(10)
+    assert __compute_input_hash(points) != __compute_input_hash(points, np.empty((0, 3)))
+    assert __compute_input_hash(points) != __compute_input_hash(points, None, np.empty(0))
+
+
+def test_the_same_numbers_as_velocities_and_as_masses_are_not_the_same_input():
+    points, numbers = sample(6), np.arange(6.0)
+    assert __compute_input_hash(points, np.column_stack([numbers] * 3)) != __compute_input_hash(points, None, numbers)
+
+
+def test_the_layout_in_memory_does_not_count():
+    points = sample(10)
+    assert __compute_input_hash(points) == __compute_input_hash(np.asfortranarray(points))
+    assert __compute_input_hash(points[::2]) == __compute_input_hash(points[::2].copy())
 
 
 if __name__ == '__main__':

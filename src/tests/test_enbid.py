@@ -96,6 +96,18 @@ def test_caching_makes_it_run_once_for_the_same_input():
 
 
 @with_fake_enbid
+def test_caching_does_not_mix_up_inputs_that_have_the_same_bytes():
+    # 10 particles, then 5 particles with 5 velocities: the same bytes, one after the other
+    points = sample(10)
+    first = enbid(points, name='run', caching=True, verbose=False)
+    second = enbid(points[:5], velocities=points[5:], name='run', caching=True, verbose=False)
+    assert first.shape == (10,) and second.shape == (5,)
+    folders, calls = runs('run')
+    assert len(folders) == 2                                              # each input has its own folder...
+    assert sorted(calls) == [['Enbid.3d'], ['Enbid.6d']]                  # ...and its own run, with its own executable
+
+
+@with_fake_enbid
 def test_a_name_is_needed():
     # Without one, a temporary folder is meant to be used: for now, this is not implemented.
     with pytest.raises(NotImplementedError):

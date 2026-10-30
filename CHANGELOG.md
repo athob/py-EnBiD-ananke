@@ -68,6 +68,10 @@ history. The package did not start with 0.2.0: it had been in development since 
 - The Read the Docs build, which the renamed example notebook had broken.
 - Importing the package no longer prints a `SyntaxWarning` about invalid escape sequences on
   recent Pythons: two regular expressions are now raw strings. Nothing else about them changes.
+- With `caching=True`, an input could be mistaken for another that has the same bytes, such as 10
+  particles and 5 particles with 5 velocities: the hash of the input now includes the role, the
+  type and the shape of each array. The folders of a cache made before this are not reused, and
+  the runs are made again once.
 
 ## [0.3.3] - 2026-08-10
 
