@@ -19,6 +19,7 @@ what has to agree with something else does (the DOIs, the license wording), the
 workflows keep the habits they were given, the changelog has its format. Standard
 library only, and nothing here needs EnBiD.
 """
+import ast
 import json
 import pathlib
 import re
@@ -329,6 +330,43 @@ def test_the_coverage_has_a_floor_and_does_not_count_the_footers_of_the_modules(
     assert "if __name__ == .__main__.:" in report              # a footer that no test runs is not a missed line
     # the floor is enforced by the report, after the table is written to the summary, and not by pytest
     assert "--cov-fail-under=0" in read(".github/workflows/ci.yml")
+
+
+def test_annotations_do_not_need_a_newer_python_than_the_oldest_one_supported():
+    # An annotation is evaluated when its function is defined: `list[int]` is a TypeError before Python 3.9, and
+    # `int | None` one before 3.10, unless the module has `from __future__ import annotations`. mypy cannot say so,
+    # as it no longer checks against Python 3.8: this does, from the oldest Python in setup.py.
+    oldest = int(re.search(r"python_requires\s*=\s*['\"]>=3\.(\d+)", read("setup.py")).group(1))
+    generics = {"list", "dict", "set", "tuple", "frozenset", "type"} if oldest < 9 else set()
+    unions = oldest < 10
+
+    def annotations(tree):
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                arguments = node.args
+                for argument in (arguments.posonlyargs + arguments.args + arguments.kwonlyargs
+                                 + [a for a in (arguments.vararg, arguments.kwarg) if a]):
+                    if argument.annotation is not None:
+                        yield argument.annotation
+                if node.returns is not None:
+                    yield node.returns
+            elif isinstance(node, ast.AnnAssign):
+                yield node.annotation
+
+    problems = []
+    for path in sorted((ROOT / "src").rglob("*.py")):
+        if path.is_symlink() or path.name in {"versioneer.py", "_version.py"} or "Enbid-2.0" in path.parts or not path.is_file():
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        if any(isinstance(n, ast.ImportFrom) and n.module == "__future__" and any(a.name == "annotations" for a in n.names)
+               for n in tree.body):
+            continue
+        for annotation in annotations(tree):
+            for node in ast.walk(annotation):
+                if (isinstance(node, ast.Subscript) and isinstance(node.value, ast.Name) and node.value.id in generics) or \
+                        (unions and isinstance(node, ast.BinOp) and isinstance(node.op, ast.BitOr)):
+                    problems.append(f"{path.relative_to(ROOT)}:{node.lineno}")
+    assert not problems, f"use typing.List, typing.Optional... (Python 3.{oldest} is supported): {problems}"
 
 
 def test_the_license_is_said_the_same_way_everywhere():
