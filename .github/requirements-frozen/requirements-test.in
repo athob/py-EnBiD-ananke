@@ -17,5 +17,9 @@
 # fetch this lock from there, tried to bump its Python 3.9 pins, and failed.
 # `bash .github/requirements/update.sh --upgrade` refreshes it when that is worth it: uv gives
 # each Python the newest version it supports.
+#
+# setuptools is here for the tests of the tools that build EnBiD (src/_build_utils.py): they import
+# setuptools and distutils, which a Python from 3.12 on does not come with. Without it they are skipped.
 pytest
 pytest-cov
+setuptools

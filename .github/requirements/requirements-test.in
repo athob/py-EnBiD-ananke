@@ -4,5 +4,9 @@
 #
 # When a Python reaches its end of life, it moves to requirements-frozen/: raise the --python-version this
 # lock is compiled with in update.sh, and list that Python in the matrix of ci.yml.
+#
+# setuptools is here for the tests of the tools that build EnBiD (src/_build_utils.py): they import
+# setuptools and distutils, which a Python from 3.12 on does not come with. Without it they are skipped.
 pytest
 pytest-cov
+setuptools

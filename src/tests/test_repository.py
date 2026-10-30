@@ -208,6 +208,28 @@ def test_the_frozen_lock_is_a_complete_lock():
         f"requirements-frozen/requirements-test.txt has to be compiled for Python 3.{oldest}, the oldest the package supports"
 
 
+def requirement_names(path):
+    """The names of the packages a requirements file asks for, the files it includes with -r too."""
+    names = set()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.split("#", 1)[0].strip()
+        if line.startswith("-r"):
+            names |= requirement_names((path.parent / line[2:].strip()).resolve())
+        elif line and not line.startswith("-"):
+            names.add(re.sub(r"[-_.]+", "-", re.match(r"[A-Za-z0-9][A-Za-z0-9._-]*", line).group(0)).lower())
+    return names
+
+
+@pytest.mark.parametrize("source", SOURCES, ids=lambda p: f"{p.parent.name}/{p.name}")
+def test_every_requirement_is_in_its_lock(source):
+    # a requirement added to a .in file, and no run of update.sh after it, would leave the tools without it
+    lock = source.with_suffix(".txt").read_text(encoding="utf-8")
+    pinned = {re.sub(r"[-_.]+", "-", name).lower()
+              for name in re.findall(r"^([A-Za-z0-9][A-Za-z0-9._-]*)(?:\[[^\]]*\])?==", lock, flags=re.MULTILINE)}
+    missing = sorted(requirement_names(source) - pinned)
+    assert not missing, f"{source.name} asks for {missing}, which {source.with_suffix('.txt').name} does not pin: run update.sh"
+
+
 def test_the_live_and_the_frozen_test_requirements_ask_for_the_same_tools():
     def tools(path):
         lines = path.read_text(encoding="utf-8").splitlines()
