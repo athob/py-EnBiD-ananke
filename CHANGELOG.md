@@ -40,6 +40,9 @@ history. The package did not start with 0.2.0: it had been in development since 
   the download, the configuring of the Makefile, the build, the package data), without a
   network or a compiler, and of the version of a command.
 - The test coverage is measured by branch too.
+- Tests of `enbid` with the real EnBiD, run when it is built (installing the package builds it):
+  one finite density per particle, the same answer for the same input, no change when the data
+  is moved as a whole, and a density that falls with the distance from the center of a cloud.
 - The CD workflow can be run by hand: it builds the distributions and publishes nothing.
 - A releasing guide. The CD workflow checks that `CHANGELOG.md` has the dated section of a
   release before building anything, and creates the GitHub release from that section.

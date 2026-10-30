@@ -169,6 +169,8 @@ rather than bad luck.
   what went in. A test that changes `CONSTANTS` has to put it back (`preserved_enbid_paths`). A
   weakness that is known and not fixed yet is a test marked `xfail(strict=True)` with its reason:
   it fails the day the weakness is fixed, which is the day to remove the mark.
+  `src/tests/test_integration.py` is the exception: it runs `enbid` with the real EnBiD, when the
+  executables are built (installing the package builds them), and is skipped otherwise.
 - **The repository checks itself**: `src/tests/test_repository.py` verifies, among other
   things, that the DOIs and the license wording agree between the README, `CITATION.cff`,
   `.zenodo.json` and the metadata, that the actions are pinned and the workflows set their
