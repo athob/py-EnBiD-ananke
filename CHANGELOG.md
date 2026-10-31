@@ -45,7 +45,7 @@ history. The package did not start with 0.2.0: it had been in development since 
   one finite density per particle, the same answer for the same input, no change when the data
   is moved as a whole, and a density that falls with the distance from the center of a cloud.
 - The CD workflow can be run by hand: it builds the distributions and publishes nothing.
-- A CI job that checks the type hints of the package with mypy, which `stable` waits for. A test checks that the annotations are valid on the oldest Python supported.
+- A CI job that checks the type hints of the package and of the tools that build it with mypy, which `stable` waits for. A test checks that the annotations are valid on the oldest Python supported.
 - Every function of the package and of the tools that build it has type hints, and a test checks it.
 - Docstrings for the internals of the package and for the tools that build EnBiD, and tests that
   every function, class and method has one, with its parameters and its result documented.

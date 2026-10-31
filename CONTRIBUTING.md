@@ -83,8 +83,10 @@ jobs:
   have to be in the wheel, and be executable.
 - **docs**: builds the documentation, as Read the Docs does.
 - **types**: checks the type hints of the package with [mypy](https://mypy.readthedocs.io/), on
-  Python 3.12 (its settings are in `pyproject.toml`). Like the others, it has to pass for
-  `stable` to move.
+  Python 3.12 (its settings are in `pyproject.toml`), and, in a second run with its own
+  settings (`.github/mypy-build.ini`), the tools that build EnBiD, which `setup.py` imports
+  under another name: `mypy --config-file .github/mypy-build.ini src/_build_utils.py`. Like
+  the others, it has to pass for `stable` to move.
 - **promote**: on a push to `develop`, once all the jobs above have passed, moves `stable`
   forward to that commit.
 
