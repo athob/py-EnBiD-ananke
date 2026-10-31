@@ -70,6 +70,10 @@ history. The package did not start with 0.2.0: it had been in development since 
 ### Fixed
 
 - The Read the Docs build, which the renamed example notebook had broken.
+- The installation page of the documentation gave numpy "before v2" and pandas "before v3", where
+  the package accepts numpy before v3 and pandas before v4 (CI runs on numpy 2 and pandas 3), advised
+  the repository over PyPI, and did not say what building the package needs. It now says what
+  the README says, and a test checks the bounds and the versions of the tools against the code.
 - Importing the package no longer prints a `SyntaxWarning` about invalid escape sequences on
   recent Pythons: two regular expressions are now raw strings. Nothing else about them changes.
 - With `caching=True`, an input could be mistaken for another that has the same bytes, such as 10

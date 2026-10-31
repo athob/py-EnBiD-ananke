@@ -474,6 +474,28 @@ def test_the_parameters_and_the_result_of_every_function_are_documented():
     assert not problems, problems
 
 
+def test_the_documents_say_what_setup_py_and_the_build_tools_require():
+    # the bounds of the dependencies, the versions of the tools the build needs and the Pythons, in the README and in
+    # the installation page of the documentation, are those the code enforces
+    setup = read("setup.py")
+    install_requires = re.search(r"install_requires\s*=\s*\[(.*?)\]", setup).group(1)
+    bounds = re.findall(r"['\"]([A-Za-z0-9_.-]+)>=([\d.]+),<([\d.]+)['\"]", install_requires)
+    assert bounds, "install_requires was not read"
+    build = read("src/_build_utils.py")
+    make = re.search(r'MIN_MAKE_VERSION\s*=\s*Version\("([\d.]+)"\)', build).group(1)
+    gpp = re.search(r'MIN_GPP_VERSION\s*=\s*Version\("([\d.]+)"\)', build).group(1)
+    pythons = re.search(r"python_requires\s*=\s*['\"]>=3\.(\d+),\s*<3\.(\d+)", setup)
+    python_range = f"Python 3.{pythons.group(1)} to 3.{int(pythons.group(2)) - 1}"
+    installation = read("docs/source/installation.rst")
+    for name, lowest, highest in bounds:
+        assert f"- {name} v{lowest} and after, before v{highest}\n" in installation, f"{name} bounds in the installation page"
+    for document, text in (("README.md", read("README.md")), ("the installation page", installation)):
+        assert python_range in text, f"{python_range} in {document}"
+        assert f"GNU make ({make} or later)" in text, f"make {make} in {document}"
+        assert f"g++ ({gpp} or later)" in text, f"g++ {gpp} in {document}"
+    assert "pip install enbid_ananke" in installation              # from PyPI, as the README says first
+
+
 def test_the_license_is_said_the_same_way_everywhere():
     assert json.loads(read(".zenodo.json"))["license"] == "GPL-2.0-or-later"
     assert re.search(r"^license: GPL-2.0-or-later$", read("CITATION.cff"), flags=re.MULTILINE)
