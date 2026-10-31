@@ -26,7 +26,7 @@ How to use
 enbid_ananke comes with the function enbid, please refer to its documentation
 for further help.
 """
-from typing import Any, Optional, Union, Dict
+from typing import Any, IO, Optional, Union
 from numpy.typing import ArrayLike, NDArray
 import pathlib
 import hashlib
@@ -169,7 +169,7 @@ def write_gadget_file(filename: pathlib.Path, pos: NDArray, mass: NDArray, vel: 
         raise RuntimeError("Header exceeds 256 bytes")
     header_data += b'\x00' * padding_len
 
-    def write_record(f, data):
+    def write_record(f: IO[bytes], data: bytes) -> None:
         f.write(struct.pack('<i', len(data)))
         f.write(data)
         f.write(struct.pack('<i', len(data)))
@@ -236,20 +236,20 @@ def write_for_enbid(points: ArrayLike,
             Path of the per-input subfolder where EnBiD input files are
             located.
     """
-    points: NDArray = np.asarray(points)
+    points_arr: NDArray = np.asarray(points)
     mass_arr: Optional[NDArray] = np.asarray(mass) if mass is not None else None
     vel_arr: Optional[NDArray] = np.asarray(velocities) if velocities is not None else None
     # Validate shapes
     if vel_arr is not None:
-        assert points.ndim == 2 and points.shape[-1] == 3, 'Points must be (N,3)'
+        assert points_arr.ndim == 2 and points_arr.shape[-1] == 3, 'Points must be (N,3)'
         assert vel_arr.ndim == 2 and vel_arr.shape[-1] == 3, 'Velocities must be (N,3)'
-        assert vel_arr.shape[0] == points.shape[0], 'Points and velocities must have same N'
+        assert vel_arr.shape[0] == points_arr.shape[0], 'Points and velocities must have same N'
     else:
-        assert points.ndim == 2 and points.shape[-1] == 3, 'Points must be (N,3)'
+        assert points_arr.ndim == 2 and points_arr.shape[-1] == 3, 'Points must be (N,3)'
     if mass_arr is not None:
-        assert mass_arr.ndim == 1 and mass_arr.shape[0] == points.shape[0], 'Mass array length mismatch'
+        assert mass_arr.ndim == 1 and mass_arr.shape[0] == points_arr.shape[0], 'Mass array length mismatch'
     # Compute hash including mass and/or velocities if present and derive the subfolder
-    inputhash: str = __compute_input_hash(points, vel_arr, mass_arr)
+    inputhash: str = __compute_input_hash(points_arr, vel_arr, mass_arr)
     hash_short: str = inputhash[:HASH_PREFIX_LEN]
     root_path: pathlib.Path = __make_path_of_name(name)
     path: pathlib.Path = __make_path_of_name(root_path / hash_short)
@@ -262,16 +262,17 @@ def write_for_enbid(points: ArrayLike,
              enbid_inputhashfile.exists())             # and enbid_inputhashfile exists,
          else True)                                    # otherwise proceed if both don't exist
         if caching else True):                         # -> proceed anyway if caching is False
-        if points.shape[0]:
+        coordinates: NDArray
+        if points_arr.shape[0]:
             # center frame on most clustered structure using NN distances
             NN = nghb.NearestNeighbors(n_neighbors=2)
-            NN.fit(points)
-            NN_distances: NDArray = NN.kneighbors(points)[0][:,1]
-            most_clustered_structure: NDArray = points[NN_distances < np.median(NN_distances)]
+            NN.fit(points_arr)
+            NN_distances: NDArray = NN.kneighbors(points_arr)[0][:,1]
+            most_clustered_structure: NDArray = points_arr[NN_distances < np.median(NN_distances)]
             most_clustered_structure_center: NDArray = np.average(most_clustered_structure, axis=0)
-            coordinates: NDArray = points - most_clustered_structure_center
+            coordinates = points_arr - most_clustered_structure_center
         else:
-            coordinates: NDArray = points
+            coordinates = points_arr
 
         if mass_arr is None:
             # ASCII format: write positions (and velocities if present)
@@ -294,7 +295,7 @@ def write_for_enbid(points: ArrayLike,
 def run_enbid(points: ArrayLike,
               velocities: Optional[ArrayLike] = None, mass: Optional[ArrayLike] = None,
               name: Optional[Union[str, pathlib.Path]] = None, ngb: int = DEFAULT_NGB,
-              verbose: bool = True, caching: bool = False, **kwargs: Dict[str, Any]) -> pathlib.Path:
+              verbose: bool = True, caching: bool = False, **kwargs: Any) -> pathlib.Path:
     """
         Run the EnBiD kernel density estimator on the supplied particle data.
         The appropriate pre-compiled EnBiD binary (3D or 6D) is selected
@@ -451,7 +452,8 @@ def run_enbid(points: ArrayLike,
         execute([enbid_exec, CONSTANTS.enbid_paramfile], verbose=verbose, cwd=path)
     return path
 
-run_enbid.__doc__ = run_enbid.__doc__.format(DEFAULT_NGB=DEFAULT_NGB)
+if run_enbid.__doc__ is not None:   # it is None when Python runs with -OO
+    run_enbid.__doc__ = run_enbid.__doc__.format(DEFAULT_NGB=DEFAULT_NGB)
 
 
 def read_enbid_binary(filename: pathlib.Path) -> NDArray:
@@ -536,7 +538,7 @@ def return_enbid(name: Optional[Union[str, pathlib.Path]] = None) -> NDArray:
 def enbid(points: ArrayLike,
           velocities: Optional[ArrayLike] = None,
           mass: Optional[ArrayLike] = None,
-          **kwargs: Dict[str, Any]) -> NDArray:
+          **kwargs: Any) -> NDArray:
     """
         Returns kernel density estimates for a set of particles.
 

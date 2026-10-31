@@ -74,6 +74,12 @@ history. The package did not start with 0.2.0: it had been in development since 
   particles and 5 particles with 5 velocities: the hash of the input now includes the role, the
   type and the shape of each array. The folders of a cache made before this are not reused, and
   the runs are made again once.
+- The package could not be imported when Python runs with `-OO`, which strips the docstrings: the
+  documentation of `run_enbid` is completed with the default number of neighbours when the package
+  is imported, and there was none to complete.
+- The type hints of the keyword arguments of `run_enbid` and `enbid` said that each one is a
+  dictionary: they are now `Any`, as they are. A few local names of `write_for_enbid` were renamed
+  for the type checker (`points_arr`, like `mass_arr` and `vel_arr`): nothing changes for the user.
 
 ## [0.3.3] - 2026-08-10
 
