@@ -169,8 +169,9 @@ rather than bad luck.
   and not as `int | None` or `list[str]`: Python 3.8 and 3.9 evaluate an annotation when its
   function is defined, and refuse those. mypy cannot warn about it, as it no longer checks
   against Python 3.8, so a test does (it follows the oldest Python in `setup.py`, and relaxes
-  when that is raised). Every function of the package is annotated, which another test checks,
-  and mypy is told to refuse the ones that are not.
+  when that is raised). Every function of the package, and of the tools that build it, is
+  annotated, which another test checks, and mypy is told to refuse the ones of the package
+  that are not.
 - **Docstrings** are in numpy style. Every function, class and method of the package, the tools
   that build EnBiD included, has one, and it is not empty. A function that takes parameters has
   a `Parameters` section that names each of them (`a, b : type` names two; the keywords of
