@@ -26,7 +26,7 @@ import re
 import fileinput
 import subprocess
 import urllib.request
-from typing import Any, Dict, List, Union
+from typing import Any, ClassVar, Dict, List, Optional, Tuple, Union
 from distutils.errors import CompileError
 from setuptools.command.build_ext import build_ext
 from setuptools import Command
@@ -327,7 +327,7 @@ def make_cmdclass() -> Dict[str, Any]:
     class _test(Command):
         """A test command, which is not implemented yet and does nothing."""
         description = 'run tests'
-        user_options = []
+        user_options: ClassVar[List[Tuple[str, Optional[str], str]]] = []
 
         def initialize_options(self) -> None:
             """There is nothing to initialize."""
