@@ -43,6 +43,23 @@ HASH_PREFIX_LEN = 16   # number of hex chars to keep from the SHA-256 digest
 
 @dataclass()
 class Constants(metaclass=Singleton):
+    """
+    Where EnBiD is and what its files are called. Its one instance is CONSTANTS.
+
+    The paths of the executables can be set (``CONSTANTS.enbid3d = path``), for
+    instance to use another executable: it is then used until it is set again.
+
+    Attributes
+    ----------
+    enbid2 : str
+        Name of the folder EnBiD is unpacked in, inside the package.
+    enbid_exec : str
+        Name of the executables, without the suffix of their dimension.
+    suffix_3d, suffix_6d : str
+        Suffixes of the 3D and of the 6D executables.
+    enbid_paramfile : str
+        Name of the parameter file written for each run.
+    """
     enbid2: str          = ENBID2
     enbid_exec: str      = ENBID_EXEC
     suffix_3d: str          = f".{TAG_3D}"
@@ -53,10 +70,12 @@ class Constants(metaclass=Singleton):
 
     @property
     def enbid_cpp(self) -> pathlib.Path:
+        """Folder of EnBiD, inside the package."""
         return pathlib.Path(__file__).resolve().parent / self.enbid2
     
     @property
     def enbid3d(self) -> pathlib.Path:
+        """Path of the 3D executable: the one built in the folder of EnBiD, unless another was set."""
         if isinstance(self._enbid3d, pathlib.Path):
             return self._enbid3d
         else:
@@ -68,6 +87,7 @@ class Constants(metaclass=Singleton):
 
     @property
     def enbid6d(self) -> pathlib.Path:
+        """Path of the 6D executable: the one built in the folder of EnBiD, unless another was set."""
         if isinstance(self._enbid6d, pathlib.Path):
             return self._enbid6d
         else:
@@ -79,6 +99,7 @@ class Constants(metaclass=Singleton):
 
     @property
     def usedvalues(self) -> str:
+        """Name of the file where EnBiD writes the values of the parameters it used in a run."""
         return f"{self.enbid_paramfile}{USEDVALUES_SUFFIX}"
 
 CONSTANTS: Constants = Constants()   # declared: the Singleton metaclass says Any, which would hide the type

@@ -25,6 +25,11 @@ __all__ = ['TTAGS', 'ENBID_PARAMFILE_TEMPLATE']
 
 @dataclass(frozen=True)
 class TemplateTags(metaclass=Singleton):
+    """
+    The names of the placeholders in the template of the parameter file, which are
+    also the names of the keyword arguments of run_enbid that set them.
+    Its one instance is TTAGS.
+    """
     fname: str                    = 'fname'
     ic_format: str                = 'ic_format'
     des_num_ngb: str              = 'des_num_ngb'
