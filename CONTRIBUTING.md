@@ -83,9 +83,8 @@ jobs:
   have to be in the wheel, and be executable.
 - **docs**: builds the documentation, as Read the Docs does.
 - **types**: checks the type hints of the package with [mypy](https://mypy.readthedocs.io/), on
-  Python 3.12 (its settings are in `pyproject.toml`). For now it only informs: it shows in
-  red when mypy finds something, and does not stop `stable` from moving. Once the hints of the
-  package are complete, it will be one of the jobs `promote` waits for.
+  Python 3.12 (its settings are in `pyproject.toml`). Like the others, it has to pass for
+  `stable` to move.
 - **promote**: on a push to `develop`, once all the jobs above have passed, moves `stable`
   forward to that commit.
 

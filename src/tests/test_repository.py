@@ -108,6 +108,11 @@ def test_the_cd_build_python_is_the_one_its_lock_is_compiled_for():
         f"cd.yml builds with Python {python.group(1)}.{python.group(2)}: run .github/requirements/update.sh"
 
 
+def test_no_job_of_ci_is_allowed_to_fail():
+    # a job that may fail is red without holding stable back: if one is ever meant to, say so here
+    assert "continue-on-error" not in read(".github/workflows/ci.yml")
+
+
 def test_cd_waits_for_a_workflow_that_exists():
     match = re.search(r'WORKFLOW_FILE="([^"]+)"', read(".github/workflows/cd.yml"))
     assert match, "the CD workflow no longer says which workflow it waits for"
