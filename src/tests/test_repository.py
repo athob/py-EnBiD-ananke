@@ -113,9 +113,11 @@ def test_ci_type_checks_the_tools_that_build_enbid_with_the_settings_made_for_th
     assert "mypy --config-file .github/mypy-build.ini src/_build_utils.py" in ci
     settings = read(".github/mypy-build.ini")
     assert "[mypy]" in settings and "disallow_untyped_defs = True" in settings
-    # without the checker's own copies of what the tools import, it cannot read their hints
-    types = read(".github/requirements/requirements-types.in")
-    assert {"setuptools", "packaging"} <= {line.strip() for line in types.splitlines()}
+    # what the checker reads the hints of: packaging has its own, setuptools has none and the stubs are used
+    types = {line.strip() for line in read(".github/requirements/requirements-types.in").splitlines()}
+    assert {"packaging", "types-setuptools"} <= types
+    # and setuptools is not to be left unchecked: nothing in the settings may say its imports can be missing
+    assert "[mypy-setuptools" not in settings
 
 
 def test_no_job_of_ci_is_allowed_to_fail():
