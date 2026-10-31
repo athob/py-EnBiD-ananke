@@ -45,7 +45,8 @@ history. The package did not start with 0.2.0: it had been in development since 
   one finite density per particle, the same answer for the same input, no change when the data
   is moved as a whole, and a density that falls with the distance from the center of a cloud.
 - The CD workflow can be run by hand: it builds the distributions and publishes nothing.
-- A test checks that the annotations are valid on the oldest Python supported.
+- A CI job that checks the type hints of the package with mypy. For now it informs and does not
+  hold `stable` back. A test checks that the annotations are valid on the oldest Python supported.
 - A releasing guide. The CD workflow checks that `CHANGELOG.md` has the dated section of a
   release before building anything, and creates the GitHub release from that section.
 

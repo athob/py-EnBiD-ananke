@@ -1,0 +1,5 @@
+# What the types job checks the type hints with (ci.yml): the checker, and what the package imports that has
+# type hints of its own (numpy) or stubs (pandas). scikit-learn has neither: see [tool.mypy] in pyproject.toml.
+mypy
+numpy
+pandas-stubs
