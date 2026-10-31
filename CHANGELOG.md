@@ -47,6 +47,7 @@ history. The package did not start with 0.2.0: it had been in development since 
 - The CD workflow can be run by hand: it builds the distributions and publishes nothing.
 - A CI job that checks the type hints of the package with mypy. For now it informs and does not
   hold `stable` back. A test checks that the annotations are valid on the oldest Python supported.
+- Every function of the package has type hints, and a test checks it.
 - A releasing guide. The CD workflow checks that `CHANGELOG.md` has the dated section of a
   release before building anything, and creates the GitHub release from that section.
 
