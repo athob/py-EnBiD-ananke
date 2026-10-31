@@ -44,7 +44,7 @@ class TemplateTags(metaclass=Singleton):
     type_list_on: str             = 'type_list_on'
     periodic_boundary_on: str     = 'periodic_boundary_on'
 
-TTAGS = TemplateTags()
+TTAGS: TemplateTags = TemplateTags()   # declared: the Singleton metaclass says Any, which would hide the type
 
 ENBID_PARAMFILE_TEMPLATE = Template(f"""%  Input and Output
 InitCondFile     ${{{TTAGS.fname}}}

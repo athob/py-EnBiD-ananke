@@ -17,6 +17,7 @@
 Contains the enbid_ananke module defaults.
 """
 import tempfile
+from typing import Any, Dict
 
 from ._templates import *
 
@@ -25,7 +26,7 @@ __all__ = ['DEFAULT_NGB', 'DEFAULT_FOR_PARAMFILE']
 TO_ENBID_FILENAME = 'to_enbid'
 DEFAULT_NGB = 64
 
-DEFAULT_FOR_PARAMFILE = {
+DEFAULT_FOR_PARAMFILE: Dict[str, Any] = {   # strings, floats and integers: they are written in a parameter file
     TTAGS.fname: TO_ENBID_FILENAME,
     # TTAGS.des_num_ngb: DEFAULT_NGB,
     TTAGS.snapshot_filebase: '_out',

@@ -48,8 +48,8 @@ __license_short__ = "Licensed under the GNU GPL v2 or later"
 
 # SOFTWARE METADATA
 __version__: Final[str] = _version.get_versions()['version']
-__date__: str = _version.get_versions()['date']
-__date__: datetime = datetime.fromisoformat(f"{__date__[:-2]}:{__date__[-2:]}")
+_date_string: str = _version.get_versions()['date']
+__date__: datetime = datetime.fromisoformat(f"{_date_string[:-2]}:{_date_string[-2:]}")
 __maintainer__ = "Adrien Thob"
 __email__ = "athob@sas.upenn.edu"
 __status_classifier__ = "Development Status :: 5 - Production/Stable"

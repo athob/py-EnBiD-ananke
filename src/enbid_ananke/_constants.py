@@ -18,6 +18,7 @@ Contains the enbid_ananke module constants.
 """
 import pathlib
 from dataclasses import dataclass
+from typing import Optional
 
 from ._name import *
 from ._builtin_utils import Singleton
@@ -46,41 +47,41 @@ class Constants(metaclass=Singleton):
     enbid_exec: str      = ENBID_EXEC
     suffix_3d: str          = f".{TAG_3D}"
     suffix_6d: str          = f".{TAG_6D}"
-    _enbid3d: pathlib.Path = None
-    _enbid6d: pathlib.Path = None
+    _enbid3d: Optional[pathlib.Path] = None
+    _enbid6d: Optional[pathlib.Path] = None
     enbid_paramfile: str = ENBID_PARAMFILE
 
     @property
-    def enbid_cpp(self):
+    def enbid_cpp(self) -> pathlib.Path:
         return pathlib.Path(__file__).resolve().parent / self.enbid2
     
     @property
-    def enbid3d(self):
+    def enbid3d(self) -> pathlib.Path:
         if isinstance(self._enbid3d, pathlib.Path):
             return self._enbid3d
         else:
             return (self.enbid_cpp / self.enbid_exec).with_suffix(self.suffix_3d)
     
     @enbid3d.setter
-    def enbid3d(self, path: pathlib.Path):
+    def enbid3d(self, path: pathlib.Path) -> None:
         self._enbid3d = path
 
     @property
-    def enbid6d(self):
+    def enbid6d(self) -> pathlib.Path:
         if isinstance(self._enbid6d, pathlib.Path):
             return self._enbid6d
         else:
             return (self.enbid_cpp / self.enbid_exec).with_suffix(self.suffix_6d)
     
     @enbid6d.setter
-    def enbid6d(self, path: pathlib.Path):
+    def enbid6d(self, path: pathlib.Path) -> None:
         self._enbid6d = path
 
     @property
-    def usedvalues(self):
+    def usedvalues(self) -> str:
         return f"{self.enbid_paramfile}{USEDVALUES_SUFFIX}"
 
-CONSTANTS = Constants()
+CONSTANTS: Constants = Constants()   # declared: the Singleton metaclass says Any, which would hide the type
 
 
 if __name__ == '__main__':
