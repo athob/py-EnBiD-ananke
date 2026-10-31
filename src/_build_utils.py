@@ -26,6 +26,7 @@ import re
 import fileinput
 import subprocess
 import urllib.request
+from typing import Any, Dict, List, Union
 from distutils.errors import CompileError
 from setuptools.command.build_ext import build_ext
 from setuptools import Command
@@ -46,7 +47,7 @@ MIN_MAKE_VERSION = Version("3.82")
 
 
 # force printing to the terminal even if stdout was redirected
-def say(text):
+def say(text: str) -> None:
     """
     Write a text, followed by a space, to the standard output and, if that is
     redirected, to the terminal too.
@@ -72,7 +73,7 @@ def say(text):
 
 
 # get the list of all files in the given directories (including those in nested directories)
-def all_files(*paths, basedir='.'):
+def all_files(*paths: str, basedir: Union[str, pathlib.Path] = '.') -> List[str]:
     """
     List the files in the given folders, those in nested folders included.
 
@@ -95,7 +96,7 @@ def all_files(*paths, basedir='.'):
             for f in files]
 
 
-def verify_system_dependencies():
+def verify_system_dependencies() -> None:
     """
     Check that the system has what building EnBiD needs: tar, GNU make (at
     least MIN_MAKE_VERSION) and the C++ compiler g++ (at least MIN_GPP_VERSION).
@@ -123,7 +124,7 @@ def verify_system_dependencies():
         raise OSError(f"Your system has g++ v{gpp_version} installed, but {NAME} requires v{MIN_GPP_VERSION}")
 
 
-def download_enbid(enbid_dir):
+def download_enbid(enbid_dir: pathlib.Path) -> None:
     """
     Download EnBiD and unpack it, replacing what was in its folder.
 
@@ -161,7 +162,7 @@ def download_enbid(enbid_dir):
         raise CompileError(str(e) + "\nError downloading Enbid, aborting...\n")
 
 
-def configure_enbid(enbid_dir, enbid_exec = CONSTANTS.enbid3d):
+def configure_enbid(enbid_dir: pathlib.Path, enbid_exec: pathlib.Path = CONSTANTS.enbid3d) -> None:
     """
     Edit the Makefile of EnBiD, in place, to build the executable of one dimension.
 
@@ -190,7 +191,7 @@ def configure_enbid(enbid_dir, enbid_exec = CONSTANTS.enbid3d):
         print(line, end='')
 
 
-def make_enbid(enbid_dir, enbid_exec = CONSTANTS.enbid3d):
+def make_enbid(enbid_dir: pathlib.Path, enbid_exec: pathlib.Path = CONSTANTS.enbid3d) -> None:
     """
     Run make in the folder of EnBiD, then make clean, with their output in a log.
 
@@ -217,7 +218,7 @@ def make_enbid(enbid_dir, enbid_exec = CONSTANTS.enbid3d):
         raise CompileError(f"Enbid compilation failed (check {pathlib.Path('.', LOG_DIR, 'Enbid-make.log')})")
 
 
-def compile_enbid(enbid_dir, enbid_exec = CONSTANTS.enbid3d):
+def compile_enbid(enbid_dir: Union[str, pathlib.Path], enbid_exec: pathlib.Path = CONSTANTS.enbid3d) -> None:
     """
     Build the executable of one dimension: make the folder of the logs if there
     is none, configure the Makefile (see configure_enbid), and run make (see
@@ -245,7 +246,7 @@ def compile_enbid(enbid_dir, enbid_exec = CONSTANTS.enbid3d):
     say("\n")
 
 
-def download_and_compile_enbid():
+def download_and_compile_enbid() -> None:
     """
     Download EnBiD into the package, and build its 3D and then its 6D executable.
 
@@ -260,7 +261,7 @@ def download_and_compile_enbid():
     compile_enbid(enbid_dir, enbid_exec = CONSTANTS.enbid6d)
 
 
-def make_package_data():
+def make_package_data() -> Dict[str, List[str]]:
     """
     Build EnBiD, and list the files the package ships.
 
@@ -290,7 +291,7 @@ def make_package_data():
                                     basedir=pathlib.Path(SRC_DIR, NAME))}
 
 
-def make_cmdclass():
+def make_cmdclass() -> Dict[str, Any]:
     """
     Give the commands of setup.py: those of versioneer, with a build_ext and a
     test command that do nothing more than the standard ones, or nothing.
@@ -303,7 +304,7 @@ def make_cmdclass():
     # Custom build step that manually creates the makefile and then calls 'make' to create the shared library
     class _build_ext(build_ext):
         """The build_ext command, to which what building EnBiD may need is to be added: it is done by make_package_data."""
-        def run(self):
+        def run(self) -> None:
             """Run build_ext."""
             build_ext.run(self)
             # try:
@@ -328,13 +329,13 @@ def make_cmdclass():
         description = 'run tests'
         user_options = []
 
-        def initialize_options(self):
+        def initialize_options(self) -> None:
             """There is nothing to initialize."""
 
-        def finalize_options(self):
+        def finalize_options(self) -> None:
             """There is nothing to finalize."""
 
-        def run(self):
+        def run(self) -> None:
             """Do nothing."""
     
     return versioneer.get_cmdclass({'build_ext': _build_ext, 'test': _test})
