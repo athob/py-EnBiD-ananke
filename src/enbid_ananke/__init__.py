@@ -372,12 +372,14 @@ def run_enbid(points: ArrayLike,
         
         type_of_smoothing : int (0, 1, 2, 3, 4, 5), optional
             Type of smoothing used:
-                0) None
-                1) FiEstAS
-                2) Normal isotropic spherical kernel
-                3) Adaptive metric spherical kernel
-                4) Normal isotropic product form kernel
-                5) Adaptive metric product form kernel
+
+            - 0: None
+            - 1: FiEstAS
+            - 2: Normal isotropic spherical kernel
+            - 3: Adaptive metric spherical kernel
+            - 4: Normal isotropic product form kernel
+            - 5: Adaptive metric product form kernel
+
             Default to 3.
         
         vol_corr : int (0, 1), optional
@@ -386,12 +388,14 @@ def run_enbid(points: ArrayLike,
         
         type_of_kernel : int (0, 1, 2, 3, 4, 5), optional
             Type of the kernel profile used:
-                0) B-spline
-                1) Top hat
-                2) Bi-weight (1-x^2)^2
-                3) Epanechikov
-                4) Cloud in cell
-                5) Triangular shaped cloud
+
+            - 0: B-spline
+            - 1: Top hat
+            - 2: Bi-weight (1-x^2)^2
+            - 3: Epanechikov
+            - 4: Cloud in cell
+            - 5: Triangular shaped cloud
+
             Default to 3.
         
         kernel_bias_correction : int (0, 1), optional

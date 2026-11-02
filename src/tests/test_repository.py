@@ -518,6 +518,30 @@ def test_the_documentation_is_built_from_the_readme_and_not_from_a_copy_of_it():
         assert (docs / name).is_file(), f"{name} is in the table of contents of the documentation, and is not there"
 
 
+def test_no_docstring_goes_back_to_a_less_indented_line_straight_after_an_indented_block():
+    # reStructuredText wants a blank line after an indented block or a list: `Type of smoothing used:` with its options
+    # indented under it is a definition list, and the line that goes back to the indentation of the description, straight
+    # after the options, gives Sphinx "Definition list ends without a blank line; unexpected unindent". The same goes for
+    # a bullet list, whose text starts after its `- `. The docs job only warns.
+    marker = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
+    problems = []
+    for path, node in documentable_nodes():
+        docstring = ast.get_docstring(node, clean=False)
+        previous_text, last_item = None, None       # where the text of the previous line starts, and the last list marker
+        for number, line in enumerate(inspect.cleandoc(docstring).splitlines() if docstring else [], 1):
+            if not line.strip():
+                previous_text, last_item = None, None
+                continue
+            indent = len(line) - len(line.lstrip())
+            item = marker.match(line)
+            if previous_text is not None and 0 < indent < previous_text and not (item and indent == last_item):
+                problems.append(f"{path.relative_to(ROOT)}: {node.name}, docstring line {number}: {line.strip()!r}")
+            previous_text = len(item.group(0)) if item else indent
+            if item:
+                last_item = indent
+    assert not problems, problems
+
+
 def test_the_license_is_said_the_same_way_everywhere():
     assert json.loads(read(".zenodo.json"))["license"] == "GPL-2.0-or-later"
     assert re.search(r"^license: GPL-2.0-or-later$", read("CITATION.cff"), flags=re.MULTILINE)

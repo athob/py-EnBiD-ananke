@@ -82,6 +82,9 @@ history. The package did not start with 0.2.0: it had been in development since 
 
 ### Fixed
 
+- The documentation build warned about the documentation of `run_enbid`: the options of
+  `type_of_smoothing` and `type_of_kernel` were an indented block that ended without a blank
+  line. They are lists now.
 - The Read the Docs build, which the renamed example notebook had broken.
 - The documentation gave numpy "before v2" and pandas "before v3", where the package accepts numpy
   before v3 and pandas before v4 (CI runs on numpy 2 and pandas 3), advised the repository over PyPI,

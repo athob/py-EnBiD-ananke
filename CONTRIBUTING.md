@@ -198,7 +198,9 @@ rather than bad luck.
   a `Parameters` section that names each of them (`a, b : type` names two; the keywords of
   `**kwargs` may be named instead of it), and one that returns something has a `Returns`
   section (`Yields` for a generator). What is nested inside a function and the setters of a
-  property are exempt: the property documents them. The tests check all of it.
+  property are exempt: the property documents them. A list, or an indented block, is followed
+  by a blank line (and so is preceded by one), or Sphinx warns that it ends without one. The
+  tests check all of it.
 - **The home page of the documentation is the README**: `docs/source/index.md` includes it, so
   that what the package requires, how to install it, how to cite it and so on are said in one
   place. To change them, edit the README. The API reference is made from the docstrings, and the
