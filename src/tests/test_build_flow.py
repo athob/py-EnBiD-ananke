@@ -171,19 +171,23 @@ def flows() -> Dict[str, Any]:
         unpacked = next((work / 'unpacked').iterdir())
         for name in ('get_requires_for_build_wheel', 'build_wheel'):
             hook(unpacked, name, work / 'from_sdist', label='(from the sdist) ')
+        with zipfile.ZipFile(next((work / 'from_sdist').glob('*.whl'))) as archive:
+            result['wheel_from_sdist'] = {info.filename: (info.external_attr >> 16) & 0o111 for info in archive.infolist()}
         return result
     finally:
         shutil.rmtree(work, ignore_errors=True)
 
 
 def test_how_many_times_enbid_is_built_by_each_hook():
+    # only the hooks that build the wheel build EnBiD, once: those that ask what is needed, or what the package
+    # is, or make the sdist, which is not built, do not
     assert flows()['builds'] == {
-        'get_requires_for_build_wheel': 1,
-        'prepare_metadata_for_build_wheel': 1,
+        'get_requires_for_build_wheel': 0,
+        'prepare_metadata_for_build_wheel': 0,
         'build_wheel': 1,
-        'get_requires_for_build_sdist': 1,
-        'build_sdist': 1,
-        '(from the sdist) get_requires_for_build_wheel': 1,
+        'get_requires_for_build_sdist': 0,
+        'build_sdist': 0,
+        '(from the sdist) get_requires_for_build_wheel': 0,
         '(from the sdist) build_wheel': 1,
     }
 
@@ -194,9 +198,23 @@ def test_the_wheel_holds_the_executables_of_enbid_and_they_are_executable():
         assert wheel.get(f"enbid_ananke/Enbid-2.0/{name}"), f"{name} is missing from the wheel or not executable"
 
 
-def test_what_the_sdist_holds_of_enbid():
+def test_the_wheel_holds_all_of_the_folder_of_enbid_and_the_licenses():
+    # what is in the folders at any depth, as it was when the files were listed by walking them
+    wheel = flows()['wheel']
+    for name in ('Enbid-2.0/README', 'Enbid-2.0/src/Makefile', 'Enbid-2.0/src/main.cpp', '__license__/LICENSE'):
+        assert f"enbid_ananke/{name}" in wheel, f"{name} is missing from the wheel"
+
+
+def test_the_wheel_made_from_the_sdist_holds_what_the_wheel_made_from_the_tree_does():
+    # this is how a release is built: the sdist, and the wheel from it, which has to make the executables itself
+    def files(wheel):
+        return {name: mode for name, mode in wheel.items() if '.dist-info/' not in name}
+    assert files(flows()['wheel_from_sdist']) == files(flows()['wheel'])
+
+
+def test_the_sdist_holds_nothing_of_enbid_and_what_building_from_it_needs():
     sdist = flows()['sdist']
-    assert [name for name in sdist if name.endswith(EXECUTABLES)] != []     # today the executables are in it
+    assert not [name for name in sdist if 'Enbid-2.0' in name]              # EnBiD is downloaded when it is built
     assert 'src/_build_utils.py' in sdist and 'setup.py' in sdist           # what building from it needs
 
 

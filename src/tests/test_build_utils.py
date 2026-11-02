@@ -286,20 +286,45 @@ def test_downloading_and_compiling_goes_through_both_dimensions_in_order():
 # --- what the package is made of
 
 @in_tmp_wd
-def test_the_package_data_is_what_was_built_and_the_licenses():
-    package = pathlib.Path(build.SRC_DIR, build.NAME)
-    for name in (f'{CONSTANTS.enbid2}/Enbid.3d', f'{CONSTANTS.enbid2}/Enbid.6d', f'{CONSTANTS.enbid2}/src/main.cpp',
-                 '__license__/LICENSE', '__init__.py'):
-        (package / name).parent.mkdir(parents=True, exist_ok=True)
-        (package / name).write_text('x')
+def test_the_package_data_gives_patterns_and_builds_nothing():
     calls = []
     with mock.patch.object(build, 'verify_system_dependencies', lambda: calls.append('verify')), \
             mock.patch.object(build, 'download_and_compile_enbid', lambda: calls.append('build')):
         data = build.make_package_data()
-    assert calls == ['verify', 'build']                                 # the system is checked before anything is downloaded
-    assert list(data) == [build.NAME]
-    assert sorted(data[build.NAME]) == [f'{CONSTANTS.enbid2}/Enbid.3d', f'{CONSTANTS.enbid2}/Enbid.6d',
-                                        f'{CONSTANTS.enbid2}/src/main.cpp', '__license__/LICENSE']
+    assert calls == []                                                  # reading setup.py builds nothing
+    assert data == {build.NAME: [f'{CONSTANTS.enbid2}/**/*', '__license__/**/*']}
+
+
+def build_py_of_the_package():
+    """The build_py command of the package, without the layer versioneer puts on it."""
+    command = build.make_cmdclass()['build_py']
+    return next(c for c in command.__mro__ if c.__name__ == '_build_py')
+
+
+def test_build_py_checks_the_system_builds_enbid_and_then_collects_the_files():
+    from setuptools import Distribution
+    from setuptools.command.build_py import build_py
+    calls = []
+    with mock.patch.object(build, 'verify_system_dependencies', lambda: calls.append('verify')), \
+            mock.patch.object(build, 'download_and_compile_enbid', lambda: calls.append('build')), \
+            mock.patch.object(build_py, 'run', lambda self: calls.append('collect')):
+        build_py_of_the_package()(Distribution()).run()
+    assert calls == ['verify', 'build', 'collect']                      # the executables exist when the files are collected
+
+
+def test_build_py_collects_nothing_when_the_system_lacks_what_is_needed():
+    from setuptools import Distribution
+    from setuptools.command.build_py import build_py
+    calls = []
+
+    def refuse():
+        raise OSError('no compiler')
+    with mock.patch.object(build, 'verify_system_dependencies', refuse), \
+            mock.patch.object(build, 'download_and_compile_enbid', lambda: calls.append('build')), \
+            mock.patch.object(build_py, 'run', lambda self: calls.append('collect')):
+        with pytest.raises(OSError, match='no compiler'):
+            build_py_of_the_package()(Distribution()).run()
+    assert calls == []
 
 
 def test_the_commands_of_the_build_are_those_of_versioneer_and_a_test_command():

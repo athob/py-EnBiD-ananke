@@ -29,6 +29,7 @@ import urllib.request
 from typing import Any, ClassVar, Dict, List, Optional, Tuple, Union
 from distutils.errors import CompileError
 from setuptools.command.build_ext import build_ext
+from setuptools.command.build_py import build_py
 from setuptools import Command
 from packaging.version import Version
 
@@ -263,47 +264,46 @@ def download_and_compile_enbid() -> None:
 
 def make_package_data() -> Dict[str, List[str]]:
     """
-    Build EnBiD, and list the files the package ships.
+    Give what the package ships, as patterns: the folder of EnBiD, with its
+    executables, and the licenses.
 
-    The system is checked, EnBiD is downloaded and built (3D and 6D), and the
-    files that leaves in the package are listed: the folder of EnBiD, with its
-    executables, and the licenses. This is done when setup.py runs, and not by
-    a build command (see the comments in the code).
+    Setuptools reads the patterns when it collects the files of the package
+    (the build_py command, see make_cmdclass), which is after EnBiD is built,
+    and not when setup.py is read: they are not a list of the files that are
+    there now. The ``**`` that matches folders at any depth needs setuptools
+    62.3 or later.
 
     Returns
     -------
     package_data : dict
-        The name of the package, with the files to ship with it, relative to it.
-
-    Raises
-    ------
-    OSError
-        If the system lacks what building EnBiD needs.
-    CompileError
-        If the download or a build failed.
+        The name of the package, with the patterns of the files to ship with it,
+        relative to it.
     """
-    for_all_files = (CONSTANTS.enbid2, '__license__')
-    ########## This can't be in MyBuildExt ##########
-    verify_system_dependencies()
-    download_and_compile_enbid()
-    ############## Because of that bit ##############
-    return {NAME: all_files(*for_all_files,
-                                    basedir=pathlib.Path(SRC_DIR, NAME))}
+    return {NAME: [f"{CONSTANTS.enbid2}/**/*", "__license__/**/*"]}
 
 
 def make_cmdclass() -> Dict[str, Any]:
     """
-    Give the commands of setup.py: those of versioneer, with a build_ext and a
-    test command that do nothing more than the standard ones, or nothing.
+    Give the commands of setup.py: those of versioneer, with a build_py that
+    builds EnBiD before it collects the files of the package, and a build_ext
+    and a test command that do nothing more than the standard ones, or nothing.
 
     Returns
     -------
     cmdclass : dict
         The commands, by name.
     """
+    class _build_py(build_py):
+        """The build_py command, which collects the files of the package, with EnBiD built just before: its executables are among those files."""
+        def run(self) -> None:
+            """Check the system, build EnBiD, and collect the files of the package."""
+            verify_system_dependencies()
+            download_and_compile_enbid()
+            build_py.run(self)
+
     # Custom build step that manually creates the makefile and then calls 'make' to create the shared library
     class _build_ext(build_ext):
-        """The build_ext command, to which what building EnBiD may need is to be added: it is done by make_package_data."""
+        """The build_ext command, which only runs for the extension modules a package declares, and this one declares none: EnBiD is built by _build_py."""
         def run(self) -> None:
             """Run build_ext."""
             build_ext.run(self)
@@ -316,11 +316,7 @@ def make_cmdclass() -> Dict[str, Any]:
             #     enbid_exists = False
             enbid_exists = False  # TODO
             if not enbid_exists:
-                ########## This can't be in MyBuildExt ##########
-                # enbid_dir = ROOT_DIR / SRC_DIR / NAME / CONSTANTS.enbid2
-                # download_enbid(enbid_dir)
-                # compile_enbid(enbid_dir)
-                #################################################
+                # EnBiD is built by _build_py, above, and not here
                 pass
 
     # TODO
@@ -338,4 +334,4 @@ def make_cmdclass() -> Dict[str, Any]:
         def run(self) -> None:
             """Do nothing."""
     
-    return versioneer.get_cmdclass({'build_ext': _build_ext, 'test': _test})
+    return versioneer.get_cmdclass({'build_py': _build_py, 'build_ext': _build_ext, 'test': _test})
