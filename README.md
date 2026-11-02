@@ -8,7 +8,7 @@
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15711/badge)](https://www.bestpractices.dev/projects/15711)
 [![Slack](https://img.shields.io/badge/slack-chat-green.svg)](https://join.slack.com/t/ananke-users/shared_invite/zt-37wmyn7ki-kmroxUul2W_VdFlEt0qCig)
 
-Python wrapper for EnBiD ([Sharma & Steinmetz 2011](http://ascl.net/1109.012)), to be used by [py-ananke](https://github.com/athob/py-ananke).
+Python wrapper for EnBiD ([Sharma & Steinmetz 2011](http://ascl.net/1109.012)), which estimates densities of discretely sampled data based on a binary space partitioning tree, to be used by [py-ananke](https://github.com/athob/py-ananke).
 
 ## Installation
 
@@ -29,6 +29,12 @@ A last option is to clone the repository, check out the branch of your choice an
 ### Requirements
 
 Python 3.8 to 3.15, on a Unix system: Windows is not supported. Whenever pip has to build the package (from the repository, or where no ready-made wheel is available), the build downloads the EnBiD source (from SourceForge), checks it against its SHA-256 and compiles it, which needs network access, `tar`, GNU make (3.82 or later) and g++ (8.5 or later).
+
+`enbid_ananke` requires the use of the following modules:
+
+- numpy v1.22 and after, before v3
+- pandas v2 and after, before v4
+- scikit-learn v1.1 and after, before v2
 
 ## Usage
 
