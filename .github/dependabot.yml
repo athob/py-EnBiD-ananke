@@ -74,3 +74,25 @@ updates:
     groups:
       ci-tools:
         patterns: ["*"]
+
+  # TEMPORARY EXPERIMENT, to be removed with dependabot-probe/. The entry above resolves its updates
+  # and then fails to open its pull request: GitHub answers HTTP 400 "invalid or unauthorized
+  # changes", which Dependabot reports as dependency_file_not_supported. Other repositories report
+  # the same for uv locks under .github/, where the pip ecosystem works. This entry has the same
+  # ecosystem, group and schedule, on a copy of the lint lock that is not under .github/: if its
+  # pull request opens, the location is the cause and the locks should move; if it fails the same
+  # way, the location is not. Close that pull request: it only changes the copy.
+  - package-ecosystem: uv
+    directory: /dependabot-probe
+    target-branch: develop
+    schedule:
+      interval: weekly
+      day: tuesday
+      time: "06:00"
+      timezone: America/New_York
+    open-pull-requests-limit: 1
+    allow:
+      - dependency-type: all
+    groups:
+      probe:
+        patterns: ["*"]

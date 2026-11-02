@@ -1,0 +1,4 @@
+# TEMPORARY: a copy of .github/requirements/requirements-lint.in, for an experiment with Dependabot
+# (see dependabot.yml). Delete this folder together with its entry there.
+# What the lint job installs (ci.yml).
+ruff
