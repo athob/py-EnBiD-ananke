@@ -234,6 +234,13 @@ def test_the_wheel_made_from_the_sdist_holds_what_the_wheel_made_from_the_tree_d
     assert files(flows()['wheel_from_sdist']) == files(flows()['wheel'])
 
 
+def test_the_wheel_and_the_sdist_hold_the_marker_of_the_type_hints():
+    # PEP 561: type checkers only use the type hints of an installed package that has this file
+    flows_ = flows()
+    assert 'enbid_ananke/py.typed' in flows_['wheel'] and 'enbid_ananke/py.typed' in flows_['wheel_from_sdist']
+    assert 'src/enbid_ananke/py.typed' in flows_['sdist'] and 'src/enbid_ananke/py.typed' in flows_['dirty_sdist']
+
+
 def test_the_sdist_holds_nothing_of_enbid_and_what_building_from_it_needs():
     sdist = flows()['sdist']
     assert not [name for name in sdist if 'Enbid-2.0' in name]              # EnBiD is downloaded when it is built

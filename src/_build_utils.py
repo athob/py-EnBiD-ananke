@@ -268,8 +268,8 @@ def download_and_compile_enbid() -> None:
 
 def make_package_data() -> Dict[str, List[str]]:
     """
-    Give what the package ships, as patterns: the folder of EnBiD, with its
-    executables, and the licenses.
+    Give what the package ships, as patterns: the marker of its type hints
+    (py.typed), the folder of EnBiD, with its executables, and the licenses.
 
     Setuptools reads the patterns when it collects the files of the package
     (the build_py command, see make_cmdclass), which is after EnBiD is built,
@@ -283,7 +283,7 @@ def make_package_data() -> Dict[str, List[str]]:
         The name of the package, with the patterns of the files to ship with it,
         relative to it.
     """
-    return {NAME: [f"{CONSTANTS.enbid2}/**/*", "__license__/**/*"]}
+    return {NAME: ["py.typed", f"{CONSTANTS.enbid2}/**/*", "__license__/**/*"]}
 
 
 def make_cmdclass() -> Dict[str, Any]:

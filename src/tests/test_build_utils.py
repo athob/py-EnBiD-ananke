@@ -321,7 +321,7 @@ def test_the_package_data_gives_patterns_and_builds_nothing():
             mock.patch.object(build, 'download_and_compile_enbid', lambda: calls.append('build')):
         data = build.make_package_data()
     assert calls == []                                                  # reading setup.py builds nothing
-    assert data == {build.NAME: [f'{CONSTANTS.enbid2}/**/*', '__license__/**/*']}
+    assert data == {build.NAME: ['py.typed', f'{CONSTANTS.enbid2}/**/*', '__license__/**/*']}
 
 
 def build_py_of_the_package():

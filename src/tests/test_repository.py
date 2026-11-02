@@ -127,6 +127,12 @@ def test_the_manifest_keeps_the_folder_of_enbid_out_of_the_sdist():
     assert f"prune src/{name}/{folder}" in read("MANIFEST.in").splitlines()
 
 
+def test_the_marker_of_the_type_hints_is_there_and_says_nothing_is_partial():
+    # PEP 561: an empty py.typed says the package is typed all through; "partial" in it would say it is not
+    marker = ROOT / "src" / "enbid_ananke" / "py.typed"
+    assert marker.is_file() and marker.read_bytes() == b""
+
+
 def test_no_job_of_ci_is_allowed_to_fail():
     # a job that may fail is red without holding stable back: if one is ever meant to, say so here
     assert "continue-on-error" not in read(".github/workflows/ci.yml")

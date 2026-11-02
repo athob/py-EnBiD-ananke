@@ -37,6 +37,7 @@ EXECUTABLES = [f"{ENBID_DIR}/Enbid.3d", f"{ENBID_DIR}/Enbid.6d"]
 WHEEL_REQUIRED = [
     f"{PACKAGE}/__init__.py",
     f"{PACKAGE}/_version.py",
+    f"{PACKAGE}/py.typed",
     f"{PACKAGE}/__license__/LICENSE",
     *EXECUTABLES,
 ]
@@ -45,6 +46,7 @@ SDIST_REQUIRED = [  # relative to the directory the sdist unpacks into
     "README.md",
     "src/_build_utils.py",
     f"src/{PACKAGE}/__init__.py",
+    f"src/{PACKAGE}/py.typed",
 ]
 
 
