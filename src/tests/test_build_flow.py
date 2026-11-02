@@ -91,10 +91,11 @@ def git(directory: pathlib.Path, *arguments: str) -> None:
                    cwd=str(directory), env=without_git_variables(dict(os.environ)), check=True, capture_output=True)
 
 
-def copy_of_the_repository(destination: pathlib.Path, checksum: str) -> pathlib.Path:
+def copy_of_the_repository(destination: pathlib.Path, checksum: str, with_git: bool = True) -> pathlib.Path:
     """
     The files that building needs, and not what an earlier build left, made a git repository of their own with
-    one commit. The copy expects the checksum given, that of the toy tarball, and not that of the real EnBiD.
+    one commit (unless with_git is False: the files alone). The copy expects the checksum given, that of the toy
+    tarball, and not that of the real EnBiD.
     """
     ignored = shutil.ignore_patterns('.git', '__pycache__', '*.egg-info', 'build', 'dist', 'log', 'Enbid-2.0', 'docs', '.github',
                                      'tests', '.mypy_cache', '.pytest_cache')
@@ -104,9 +105,10 @@ def copy_of_the_repository(destination: pathlib.Path, checksum: str) -> pathlib.
     replaced = re.sub(r"^ENBID_SHA256 = '[0-9a-f]{64}'$", f"ENBID_SHA256 = '{checksum}'", text, flags=re.MULTILINE)
     assert replaced != text, "the checksum of EnBiD was not found in _constants.py"
     constants.write_text(replaced)
-    git(destination, 'init', '-q')
-    git(destination, 'add', '-A')
-    git(destination, 'commit', '-q', '-m', 'the copy')
+    if with_git:
+        git(destination, 'init', '-q')
+        git(destination, 'add', '-A')
+        git(destination, 'commit', '-q', '-m', 'the copy')
     return destination
 
 
@@ -240,6 +242,38 @@ def test_the_sdist_holds_nothing_of_enbid_and_what_building_from_it_needs():
 
 def test_the_sdist_of_a_tree_that_has_built_enbid_holds_nothing_of_it_either():
     assert not [name for name in flows()['dirty_sdist'] if 'Enbid-2.0' in name]
+
+
+def test_files_without_any_git_information_can_be_built_and_the_package_imported():
+    # an archive of a commit that no tag names, a copy of the files without .git, as a Docker image is built from: versioneer
+    # knows neither the version nor the date there ("0+unknown", None), and the metadata of the package used to need a date
+    check_building_is_possible()
+    work = pathlib.Path(tempfile.mkdtemp(prefix='enbid_ananke_no_git_'))
+    try:
+        site = work / 'site'
+        site.mkdir()
+        (site / 'sitecustomize.py').write_text(SITECUSTOMIZE)
+        toy = toy_tarball()
+        (work / 'toy.tar.gz').write_bytes(toy)
+        # GIT_CEILING_DIRECTORIES: git does not look for a repository above the copy, as it would in a temporary folder that is in one
+        environment = dict(without_git_variables(dict(os.environ)), PYTHONPATH=str(site), ENBID_TOY_TARBALL=str(work / 'toy.tar.gz'),
+                           COUNTER=str(work / 'counter'), GIT_CEILING_DIRECTORIES=str(work))
+        tree = copy_of_the_repository(work / 'plain', hashlib.sha256(toy).hexdigest(), with_git=False)
+        assert not (tree / '.git').exists()
+        wheels = work / 'wheels'
+        wheels.mkdir()
+        run_hook(tree, environment, 'build_wheel', wheels)
+        installed = work / 'installed'
+        with zipfile.ZipFile(next(wheels.glob('*.whl'))) as archive:
+            archive.extractall(installed)
+        result = subprocess.run([sys.executable, '-c', 'import enbid_ananke as e; print(e.__version__, e.__date__.year)'],
+                                cwd=str(installed), env=dict(without_git_variables(dict(os.environ)), PYTHONPATH=str(installed)),
+                                capture_output=True, text=True)
+        assert result.returncode == 0, result.stderr[-2000:]
+        version, year = result.stdout.split()
+        assert version == '0+unknown' and int(year) >= 2026
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
 
 
 if __name__ == '__main__':

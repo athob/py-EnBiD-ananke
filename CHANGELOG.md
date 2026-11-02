@@ -106,6 +106,10 @@ history. The package did not start with 0.2.0: it had been in development since 
 - The type hints of the keyword arguments of `run_enbid` and `enbid` said that each one is a
   dictionary: they are now `Any`, as they are. A few local names of `write_for_enbid` were renamed
   for the type checker (`points_arr`, like `mass_arr` and `vel_arr`): nothing changes for the user.
+- Building the package from files that have no git information, such as an archive of a commit that no
+  tag names or a copy of the files made without `.git` (what a Docker image is built from), failed for
+  want of a date, and so did importing a package built from them. The date is that of now when
+  versioneer has none, and the version `0+unknown`: releases, which have both, are not affected.
 
 ## [0.3.3] - 2026-08-10
 
