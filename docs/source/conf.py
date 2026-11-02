@@ -64,6 +64,9 @@ nb_execution_timeout = 100
 
 html_theme = 'pydata_sphinx_theme'
 
+# The theme prints it in the header, and Sphinx's own is '{project} {release} documentation': too long.
+html_title = f'{project} {release}'
+
 html_theme_options = {
     "icon_links": [
         {

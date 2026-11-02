@@ -73,6 +73,8 @@ history. The package did not start with 0.2.0: it had been in development since 
 - The home page of the documentation is the README, included, and no longer pages that copied
   parts of it (an installation page, and an introduction). The sentence of the introduction and the
   bounds of the dependencies are in the README now.
+- The header of the documentation, and the title of its pages, say the name and the version of the
+  project, without the word "documentation", which made the header long enough to cover its tabs.
 - EnBiD is downloaded and built once, when the wheel is built, by a `build_py` command: it used to
   be each time `setup.py` was read, which is three times for a `pip install` and four for
   `python -m build`. Asking for the requirements or the metadata of the package no longer needs a
