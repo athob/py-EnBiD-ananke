@@ -21,8 +21,9 @@ Check the distributions that `python -m build` made, before anyone publishes the
 The point of the wheel is to carry the EnBiD executables that setup.py compiled,
 so a wheel without them (or with them not executable) is broken however well it
 installs. The sdist has to carry what building from it needs: setup.py imports
-src/_build_utils.py, which MANIFEST.in is what includes. EnBiD is not part of it:
-building downloads it.
+src/_build_utils.py, which MANIFEST.in is what includes. EnBiD is not part of it,
+and MANIFEST.in keeps it out: building downloads it, and an sdist made in a tree
+that has built it must not carry its executables.
 """
 import sys
 import tarfile
@@ -70,6 +71,8 @@ def check_sdist(path):
     for name in SDIST_REQUIRED:
         if name not in names:
             problems.append(f"{path.name}: missing {name}")
+    for name in sorted(n for n in names if n.startswith(f"src/{ENBID_DIR}/")):
+        problems.append(f"{path.name}: carries {name}, and EnBiD is downloaded when the package is built")
     return problems
 
 

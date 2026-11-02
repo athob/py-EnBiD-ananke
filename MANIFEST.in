@@ -1,1 +1,2 @@
 include src/*.py
+prune src/enbid_ananke/Enbid-2.0

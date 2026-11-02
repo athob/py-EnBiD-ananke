@@ -120,6 +120,13 @@ def test_ci_type_checks_the_tools_that_build_enbid_with_the_settings_made_for_th
     assert "[mypy-setuptools" not in settings
 
 
+def test_the_manifest_keeps_the_folder_of_enbid_out_of_the_sdist():
+    # EnBiD is downloaded when the package is built: what a build left in the tree is not for the sdist
+    name = re.search(r"^NAME\s*=\s*['\"]([^'\"]+)['\"]", read("src/enbid_ananke/_name.py"), flags=re.MULTILINE).group(1)
+    folder = re.search(r"^ENBID2\s*=\s*['\"]([^'\"]+)['\"]", read("src/enbid_ananke/_constants.py"), flags=re.MULTILINE).group(1)
+    assert f"prune src/{name}/{folder}" in read("MANIFEST.in").splitlines()
+
+
 def test_no_job_of_ci_is_allowed_to_fail():
     # a job that may fail is red without holding stable back: if one is ever meant to, say so here
     assert "continue-on-error" not in read(".github/workflows/ci.yml")

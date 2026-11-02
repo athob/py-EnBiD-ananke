@@ -158,6 +158,13 @@ def flows() -> Dict[str, Any]:
         with zipfile.ZipFile(wheel) as archive:
             result['wheel'] = {info.filename: (info.external_attr >> 16) & 0o111 for info in archive.infolist()}
 
+        # an sdist made in that same tree, where EnBiD has just been built: what a developer, or CI after an install, has
+        dirty = work / 'dirty'
+        dirty.mkdir()
+        hook(tree, 'build_sdist', dirty, label='(in a tree that built EnBiD) ')
+        with tarfile.open(next(dirty.glob('*.tar.gz'))) as archive:
+            result['dirty_sdist'] = sorted(member.name.split('/', 1)[1] for member in archive.getmembers() if member.isfile() and '/' in member.name)
+
         # what build does: the sdist, and then the wheel, from the sdist
         tree = copy_of_the_repository(work / 'build')
         sdists = work / 'sdists'
@@ -189,6 +196,7 @@ def test_how_many_times_enbid_is_built_by_each_hook():
         'build_sdist': 0,
         '(from the sdist) get_requires_for_build_wheel': 0,
         '(from the sdist) build_wheel': 1,
+        '(in a tree that built EnBiD) build_sdist': 0,
     }
 
 
@@ -216,6 +224,10 @@ def test_the_sdist_holds_nothing_of_enbid_and_what_building_from_it_needs():
     sdist = flows()['sdist']
     assert not [name for name in sdist if 'Enbid-2.0' in name]              # EnBiD is downloaded when it is built
     assert 'src/_build_utils.py' in sdist and 'setup.py' in sdist           # what building from it needs
+
+
+def test_the_sdist_of_a_tree_that_has_built_enbid_holds_nothing_of_it_either():
+    assert not [name for name in flows()['dirty_sdist'] if 'Enbid-2.0' in name]
 
 
 if __name__ == '__main__':
