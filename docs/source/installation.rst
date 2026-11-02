@@ -4,7 +4,7 @@ Installation instructions
 Requirements
 ------------
 
-Python 3.8 to 3.15, on a Unix system: Windows is not supported. Whenever pip has to build the package (from the repository, or where no ready-made wheel is available), the build downloads the EnBiD source (from SourceForge) and compiles it, which needs network access, ``tar``, GNU make (3.82 or later) and g++ (8.5 or later).
+Python 3.8 to 3.15, on a Unix system: Windows is not supported. Whenever pip has to build the package (from the repository, or where no ready-made wheel is available), the build downloads the EnBiD source (from SourceForge), checks it against its SHA-256 and compiles it, which needs network access, ``tar``, GNU make (3.82 or later) and g++ (8.5 or later).
 
 Dependencies
 ------------

@@ -15,6 +15,10 @@ history. The package did not start with 0.2.0: it had been in development since 
 
 ### Added
 
+- The download of EnBiD is checked against its SHA-256, which the package knows (`ENBID_SHA256`):
+  another file stops the installation with a message that gives both checksums, and is not built.
+- Tests of how the package is built, with a toy EnBiD: how many times EnBiD is built by each of the
+  ways of building the package, and what the sdist and the wheel hold.
 - Development versions: a tag such as `v0.3.4.dev0` publishes to TestPyPI only, and the
   CD workflow now refuses a tag that is not a plain PEP 440 version.
 - Project files: a contributing guide, a code of conduct, a security policy, issue
@@ -66,6 +70,12 @@ history. The package did not start with 0.2.0: it had been in development since 
   workflows only get the permissions they need.
 - The CD workflow builds with Python 3.12 inside its container, Python 3.10 having reached
   its end of life.
+- EnBiD is downloaded and built once, when the wheel is built, by a `build_py` command: it used to
+  be each time `setup.py` was read, which is three times for a `pip install` and four for
+  `python -m build`. Asking for the requirements or the metadata of the package no longer needs a
+  compiler or a network, and the wheel holds the same files. Building needs setuptools 62.3 or later.
+- The sdist no longer carries EnBiD, its sources or the Linux executables that were built with it,
+  even when it is made in a tree that has built EnBiD: building downloads it.
 
 ### Fixed
 

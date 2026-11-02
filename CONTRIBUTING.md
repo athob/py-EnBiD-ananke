@@ -58,6 +58,25 @@ pytest src
 To have ruff run on every commit by itself, install the optional
 [pre-commit](https://pre-commit.com/) hook: `pip install pre-commit && pre-commit install`.
 
+## How the package is built
+
+`setup.py` only describes the package: reading it builds nothing. What builds EnBiD is in
+`src/_build_utils.py` (`make_cmdclass`): a `build_py` command, which setuptools runs when the
+wheel is built, checks that the system has `tar`, GNU make and g++, downloads EnBiD from
+`ENBID_URL`, checks the download against `ENBID_SHA256`, and builds the 3D and 6D executables.
+Only then does it collect the files of the package, the executables among them: `make_package_data`
+gives the patterns of the files to collect, which are read at that point.
+
+So EnBiD is built once by a `pip install`, and not when pip only asks what the package requires
+or what its metadata is, nor when the sdist is made: the sdist holds no EnBiD, and `MANIFEST.in`
+keeps its folder out even when your tree has built it. `src/tests/test_build_flow.py` checks all
+of this with a toy EnBiD, and `.github/scripts/check_dist.py` checks the distributions CI builds.
+
+When EnBiD is released again, the download link serves another file, and building fails with the
+two checksums in the message. After checking what it served, put the new SHA-256 in `ENBID_SHA256`
+(`src/enbid_ananke/_constants.py`), which `curl -sL https://sourceforge.net/projects/enbid/files/latest/download | sha256sum`
+gives.
+
 ## The automatic checks (CI)
 
 The **CI** workflow ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs on
