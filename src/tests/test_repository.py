@@ -210,6 +210,19 @@ def test_locks_dependabot_maintains_pin_each_package_once(lock):
     assert not twice, f"{lock.name} pins {twice} more than once: it cannot be maintained by Dependabot"
 
 
+def test_the_ignore_of_sphinx_9_2_matches_the_python_of_the_docs_lock():
+    # Sphinx 9.2 needs Python 3.13. While the docs lock is compiled for an older Python, Dependabot
+    # cannot lock it and reports an error that fails its whole run; once the lock is compiled for 3.13
+    # or later the ignore is not needed, and would hide Sphinx updates for good.
+    text = read(".github/dependabot.yml")
+    ignored = re.search(r"dependency-name:\s*sphinx\s*\n\s*versions:\s*\[\"?>=9\.2\"?\]", text) is not None
+    header = "\n".join((REQUIREMENTS / "requirements-docs.txt").read_text(encoding="utf-8").splitlines()[:3])
+    lowest = int(re.search(r"--python-version\s+3\.(\d+)", header).group(1))
+    assert ignored == (lowest < 13), (
+        "the docs lock is compiled for Python 3.%d, so the ignore of sphinx >=9.2 in dependabot.yml %s" %
+        (lowest, "has to stay" if lowest < 13 else "has to go"))
+
+
 def test_the_folder_dependabot_scans_has_no_subfolders():
     # Dependabot fetches the subfolders of the folder it is given, not only its files: it found the
     # frozen lock in requirements/frozen/ and tried to bump its pins. A lock it must not maintain

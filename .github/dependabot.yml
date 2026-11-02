@@ -64,6 +64,13 @@ updates:
       # fails its whole run, every week. Remove this once a myst-parser release allows 0.23.
       - dependency-name: docutils
         versions: [">=0.23"]
+      # Sphinx 9.2 needs Python 3.13, and the docs lock is compiled for 3.12 and up (the docs job of
+      # ci.yml runs on 3.12): uv rightly refuses to lock it, and Dependabot reports that as an error
+      # ("unknown_error", with "requires Python >=3.13" in the log). Remove this when the docs lock is
+      # compiled for Python 3.13 or later: test_the_ignore_of_sphinx_9_2_matches_the_python_of_the_docs_lock
+      # fails then, to say so.
+      - dependency-name: sphinx
+        versions: [">=9.2"]
     groups:
       ci-tools:
         patterns: ["*"]
