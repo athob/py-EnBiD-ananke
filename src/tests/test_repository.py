@@ -542,6 +542,22 @@ def test_no_docstring_goes_back_to_a_less_indented_line_straight_after_an_indent
     assert not problems, problems
 
 
+def test_no_heading_of_the_documentation_is_followed_by_a_rule():
+    # docutils refuses a section that begins with a transition ("Document or section may not begin with a transition"),
+    # and the docs job only warns. The documentation is made of the README and of the notebook.
+    notebook = json.loads(read("jupyter/testing_enbid_ananke.ipynb"))
+    sources = {"README.md": read("README.md")}
+    sources.update({f"the notebook, cell {number}": "".join(cell["source"])
+                    for number, cell in enumerate(notebook["cells"]) if cell["cell_type"] == "markdown"})
+    heading, rule = re.compile(r"^#{1,6} "), re.compile(r"^(?:-{3,}|\*{3,}|_{3,})\s*$")
+    problems = []
+    for where, text in sources.items():
+        lines = [line for line in text.splitlines() if line.strip()]
+        problems += [f"{where}: {before!r} is followed by a rule" for before, after in zip(lines, lines[1:])
+                     if heading.match(before) and rule.match(after)]
+    assert not problems, problems
+
+
 def test_the_license_is_said_the_same_way_everywhere():
     assert json.loads(read(".zenodo.json"))["license"] == "GPL-2.0-or-later"
     assert re.search(r"^license: GPL-2.0-or-later$", read("CITATION.cff"), flags=re.MULTILINE)
