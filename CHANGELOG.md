@@ -70,6 +70,9 @@ history. The package did not start with 0.2.0: it had been in development since 
   workflows only get the permissions they need.
 - The CD workflow builds with Python 3.12 inside its container, Python 3.10 having reached
   its end of life.
+- The home page of the documentation is the README, included, and no longer pages that copied
+  parts of it (an installation page, and an introduction). The sentence of the introduction and the
+  bounds of the dependencies are in the README now.
 - EnBiD is downloaded and built once, when the wheel is built, by a `build_py` command: it used to
   be each time `setup.py` was read, which is three times for a `pip install` and four for
   `python -m build`. Asking for the requirements or the metadata of the package no longer needs a
@@ -80,10 +83,10 @@ history. The package did not start with 0.2.0: it had been in development since 
 ### Fixed
 
 - The Read the Docs build, which the renamed example notebook had broken.
-- The installation page of the documentation gave numpy "before v2" and pandas "before v3", where
-  the package accepts numpy before v3 and pandas before v4 (CI runs on numpy 2 and pandas 3), advised
-  the repository over PyPI, and did not say what building the package needs. It now says what
-  the README says, and a test checks the bounds and the versions of the tools against the code.
+- The documentation gave numpy "before v2" and pandas "before v3", where the package accepts numpy
+  before v3 and pandas before v4 (CI runs on numpy 2 and pandas 3), advised the repository over PyPI,
+  and did not say what building the package needs. It now says what the README says, and a test
+  checks the bounds and the versions of the tools against the code.
 - Importing the package no longer prints a `SyntaxWarning` about invalid escape sequences on
   recent Pythons: two regular expressions are now raw strings. Nothing else about them changes.
 - With `caching=True`, an input could be mistaken for another that has the same bytes, such as 10

@@ -481,9 +481,9 @@ def test_the_parameters_and_the_result_of_every_function_are_documented():
     assert not problems, problems
 
 
-def test_the_documents_say_what_setup_py_and_the_build_tools_require():
-    # the bounds of the dependencies, the versions of the tools the build needs and the Pythons, in the README and in
-    # the installation page of the documentation, are those the code enforces
+def test_the_readme_says_what_setup_py_and_the_build_tools_require():
+    # the bounds of the dependencies, the versions of the tools the build needs and the Pythons, in the README, which
+    # the documentation is built from, are those the code enforces
     setup = read("setup.py")
     install_requires = re.search(r"install_requires\s*=\s*\[(.*?)\]", setup).group(1)
     bounds = re.findall(r"['\"]([A-Za-z0-9_.-]+)>=([\d.]+),<([\d.]+)['\"]", install_requires)
@@ -493,14 +493,29 @@ def test_the_documents_say_what_setup_py_and_the_build_tools_require():
     gpp = re.search(r'MIN_GPP_VERSION\s*=\s*Version\("([\d.]+)"\)', build).group(1)
     pythons = re.search(r"python_requires\s*=\s*['\"]>=3\.(\d+),\s*<3\.(\d+)", setup)
     python_range = f"Python 3.{pythons.group(1)} to 3.{int(pythons.group(2)) - 1}"
-    installation = read("docs/source/installation.rst")
-    for document, text in (("README.md", read("README.md")), ("the installation page", installation)):
-        for name, lowest, highest in bounds:
-            assert f"- {name} v{lowest} and after, before v{highest}\n" in text, f"{name} bounds in {document}"
-        assert python_range in text, f"{python_range} in {document}"
-        assert f"GNU make ({make} or later)" in text, f"make {make} in {document}"
-        assert f"g++ ({gpp} or later)" in text, f"g++ {gpp} in {document}"
-    assert "pip install enbid_ananke" in installation              # from PyPI, as the README says first
+    readme = read("README.md")
+    for name, lowest, highest in bounds:
+        assert f"- {name} v{lowest} and after, before v{highest}\n" in readme, f"{name} bounds in the README"
+    assert python_range in readme, f"{python_range} in the README"
+    assert f"GNU make ({make} or later)" in readme, f"make {make} in the README"
+    assert f"g++ ({gpp} or later)" in readme, f"g++ {gpp} in the README"
+    assert "pip install enbid_ananke" in readme                    # from PyPI first
+
+
+def test_the_documentation_is_built_from_the_readme_and_not_from_a_copy_of_it():
+    # a text is said in one place: the home page includes the README. The docs job does not fail when an include
+    # fails (it only warns), and the page would be published empty: this is what notices.
+    docs = ROOT / "docs" / "source"
+    index = (docs / "index.md").read_text(encoding="utf-8")
+    included = re.search(r"^```\{include\} (\S+)", index, flags=re.MULTILINE)
+    assert included, "docs/source/index.md does not include anything"
+    assert (docs / included.group(1)).resolve() == (ROOT / "README.md").resolve()
+    # there is one master document, and the pages that copied parts of the README are gone
+    for name in ("index.rst", "installation.rst", "intro.rst"):
+        assert not (docs / name).exists(), f"docs/source/{name} would say again what the README says"
+    # what the table of contents lists is there
+    for name in re.findall(r"^([\w./-]+\.(?:rst|md|ipynb))$", index, flags=re.MULTILINE):
+        assert (docs / name).is_file(), f"{name} is in the table of contents of the documentation, and is not there"
 
 
 def test_the_license_is_said_the_same_way_everywhere():
