@@ -23,10 +23,13 @@ from typing import Optional
 from ._name import *
 from ._builtin_utils import Singleton
 
-__all__ = ['NAME', 'LOG_DIR', 'SRC_DIR', 'ENBID_URL', 'CONSTANTS', 'SNAPSHOT_FILEBASE', 'ENBID_OUT_EXT', 'HASH_EXT', 'HASH_ENCODING', 'HASH_PREFIX_LEN']
+__all__ = ['NAME', 'LOG_DIR', 'SRC_DIR', 'ENBID_URL', 'ENBID_SHA256', 'CONSTANTS', 'SNAPSHOT_FILEBASE', 'ENBID_OUT_EXT', 'HASH_EXT', 'HASH_ENCODING', 'HASH_PREFIX_LEN']
 
 ENBID2 = 'Enbid-2.0'
 ENBID_URL = 'https://sourceforge.net/projects/enbid/files/latest/download'
+# The SHA-256 of the file ENBID_URL gives, which the build checks. If EnBiD is released again, that link gives another
+# file, and the build fails until this is changed: `curl -sL <ENBID_URL> | sha256sum`, after checking what it gave.
+ENBID_SHA256 = '7695c9ff3476897033ad9164902c3f433f96bbff5d9be2bdda5c4f44b365fbfe'
 ENBID_EXEC = 'Enbid'
 TAG_3D = "3d"
 TAG_6D = "6d"

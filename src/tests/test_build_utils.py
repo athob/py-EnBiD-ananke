@@ -20,12 +20,15 @@ makes a tarball on the spot, and EnBiD is a toy with a Makefile that has the lin
 The module imports setuptools and distutils, which are not always there: without them, nothing is run here.
 """
 import contextlib
+import gzip
+import hashlib
 import io
 import os
 import pathlib
 import re
 import shutil
 import tarfile
+import tempfile
 import urllib.error
 import urllib.request
 from unittest import mock
@@ -90,16 +93,32 @@ def test_the_oldest_gpp_is_8_5(gpp, accepted):
 
 # --- downloading EnBiD
 
-def fake_download(members, top='Enbid-2.0'):
+def tarball_of(members, top='Enbid-2.0'):
+    """A tarball of the members, in a folder of that name, made the same way every time."""
+    buffer = io.BytesIO()
+    with tarfile.open(fileobj=buffer, mode='w') as archive:
+        for name, text in members.items():
+            data = text.encode()
+            info = tarfile.TarInfo(f"{top}/{name}")
+            info.size, info.mtime = len(data), 0
+            archive.addfile(info, io.BytesIO(data))
+    return gzip.compress(buffer.getvalue(), mtime=0)
+
+
+@contextlib.contextmanager
+def downloading(members, top='Enbid-2.0', expected=True):
+    """
+    The download gives a tarball of the members. It is the file the package expects, unless told otherwise: the
+    checksum it expects is that of the tarball.
+    """
+    content = tarball_of(members, top)
+
     def urlretrieve(url, filename=None):
-        with tarfile.open(filename, 'w:gz') as archive:
-            for name, text in members.items():
-                data = text.encode()
-                info = tarfile.TarInfo(f"{top}/{name}")
-                info.size = len(data)
-                archive.addfile(info, io.BytesIO(data))
+        pathlib.Path(filename).write_bytes(content)
         return filename, None
-    return urlretrieve
+    checksum = hashlib.sha256(content).hexdigest() if expected else build.ENBID_SHA256
+    with mock.patch.object(urllib.request, 'urlretrieve', urlretrieve), mock.patch.object(build, 'ENBID_SHA256', checksum):
+        yield content
 
 
 @needs_tar
@@ -107,7 +126,7 @@ def fake_download(members, top='Enbid-2.0'):
 def test_enbid_is_downloaded_and_unpacked():
     pathlib.Path('work').mkdir()
     enbid_dir = pathlib.Path('work/Enbid-2.0').absolute()
-    with quiet(), mock.patch.object(urllib.request, 'urlretrieve', fake_download({'src/Makefile': 'all:\n', 'README': 'r'})):
+    with quiet(), downloading({'src/Makefile': 'all:\n', 'README': 'r'}):
         build.download_enbid(enbid_dir)
     assert (enbid_dir / 'src' / 'Makefile').is_file() and (enbid_dir / 'README').is_file()
     assert [p.name for p in pathlib.Path('work').iterdir()] == ['Enbid-2.0']      # the tarball does not stay
@@ -118,7 +137,7 @@ def test_enbid_is_downloaded_and_unpacked():
 def test_what_was_there_before_is_replaced():
     pathlib.Path('work/Enbid-2.0').mkdir(parents=True)
     (pathlib.Path('work/Enbid-2.0') / 'stale').write_text('old')
-    with quiet(), mock.patch.object(urllib.request, 'urlretrieve', fake_download({'README': 'new'})):
+    with quiet(), downloading({'README': 'new'}):
         build.download_enbid(pathlib.Path('work/Enbid-2.0').absolute())
     assert not (pathlib.Path('work/Enbid-2.0') / 'stale').exists()
     assert (pathlib.Path('work/Enbid-2.0') / 'README').read_text() == 'new'
@@ -136,9 +155,22 @@ def test_a_download_that_leaves_no_file_is_a_compile_error():
 @in_tmp_wd
 def test_a_tarball_without_the_expected_folder_is_a_compile_error():
     pathlib.Path('work').mkdir()
-    with quiet(), mock.patch.object(urllib.request, 'urlretrieve', fake_download({'README': 'r'}, top='Another-1.0')):
+    with quiet(), downloading({'README': 'r'}, top='Another-1.0'):
         with pytest.raises(CompileError, match='Error unpacking'):
             build.download_enbid(pathlib.Path('work/Enbid-2.0').absolute())
+
+
+@needs_tar
+@in_tmp_wd
+def test_a_download_that_is_not_the_expected_file_is_refused_and_not_unpacked():
+    pathlib.Path('work').mkdir()
+    enbid_dir = pathlib.Path('work/Enbid-2.0').absolute()
+    with quiet(), downloading({'README': 'r'}, expected=False) as content:
+        with pytest.raises(CompileError) as error:
+            build.download_enbid(enbid_dir)
+    assert hashlib.sha256(content).hexdigest() in str(error.value)      # what it got...
+    assert build.ENBID_SHA256 in str(error.value)                       # ...and what it expected
+    assert list(pathlib.Path('work').iterdir()) == []                   # nothing unpacked, and the tarball does not stay
 
 
 @in_tmp_wd
@@ -149,6 +181,21 @@ def test_a_download_that_fails_raises_its_own_error():
     with quiet(), mock.patch.object(urllib.request, 'urlretrieve', refused):
         with pytest.raises(urllib.error.URLError):                      # not turned into a CompileError today
             build.download_enbid(pathlib.Path('work/Enbid-2.0').absolute())
+
+
+# --- the checksum
+
+def test_the_sha256_of_a_file_is_that_of_hashlib_even_when_the_file_is_bigger_than_what_is_read_at_once():
+    with tempfile.TemporaryDirectory() as directory:
+        big, empty = pathlib.Path(directory, 'big'), pathlib.Path(directory, 'empty')
+        big.write_bytes(bytes(range(256)) * 20000)                      # 5 MB: read in several chunks
+        empty.write_bytes(b'')
+        assert build.sha256_of(big) == hashlib.sha256(big.read_bytes()).hexdigest()
+        assert build.sha256_of(empty) == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+
+
+def test_the_checksum_the_build_expects_is_a_sha256_in_hexadecimal():
+    assert re.fullmatch(r'[0-9a-f]{64}', build.ENBID_SHA256)
 
 
 # --- configuring and building EnBiD

@@ -17,6 +17,7 @@
 Contains the EnBiD module building utility tools. Credit to
 https://github.com/GalacticDynamics-Oxford/Agama/blob/master/setup.py.
 """
+import hashlib
 import platform
 import pathlib
 import shutil
@@ -100,12 +101,33 @@ def verify_system_dependencies() -> None:
         raise OSError(f"Your system has g++ v{gpp_version} installed, but {NAME} requires v{MIN_GPP_VERSION}")
 
 
+def sha256_of(path: pathlib.Path) -> str:
+    """
+    Give the SHA-256 of a file.
+
+    Parameters
+    ----------
+    path : pathlib.Path
+        The file.
+
+    Returns
+    -------
+    digest : str
+        The digest, in hexadecimal.
+    """
+    hasher = hashlib.sha256()
+    with open(path, 'rb') as f:
+        for chunk in iter(lambda: f.read(1 << 20), b''):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
 def download_enbid(enbid_dir: pathlib.Path) -> None:
     """
     Download EnBiD and unpack it, replacing what was in its folder.
 
-    The tarball is downloaded from ENBID_URL next to the folder, unpacked with
-    tar, and deleted.
+    The tarball is downloaded from ENBID_URL next to the folder, checked
+    against ENBID_SHA256, unpacked with tar, and deleted.
 
     Parameters
     ----------
@@ -115,7 +137,9 @@ def download_enbid(enbid_dir: pathlib.Path) -> None:
     Raises
     ------
     CompileError
-        If nothing was downloaded, or the tarball did not unpack to ``enbid_dir``.
+        If nothing was downloaded, or the tarball is not the file that
+        ENBID_SHA256 is the SHA-256 of (it is deleted, and not unpacked), or it
+        did not unpack to ``enbid_dir``.
     urllib.error.URLError
         If the download itself failed: it is not turned into a CompileError.
     """
@@ -126,6 +150,11 @@ def download_enbid(enbid_dir: pathlib.Path) -> None:
     try:
         urllib.request.urlretrieve(ENBID_URL, filename=tarfile)
         if tarfile.is_file():
+            digest = sha256_of(tarfile)
+            if digest != ENBID_SHA256:
+                tarfile.unlink()
+                raise RuntimeError(f"The file downloaded from {ENBID_URL} has the SHA-256 {digest}, and this version "
+                                   f"of the package is made for the one that has {ENBID_SHA256}")
             say("\nUnpacking Enbid")
             subprocess.call(['tar', 'xzvf', tarfile, '-C', tarfile.parent],
                             stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)

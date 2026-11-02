@@ -27,9 +27,11 @@ them, nothing is run here.
 """
 import functools
 import gzip
+import hashlib
 import io
 import os
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
@@ -89,11 +91,19 @@ def git(directory: pathlib.Path, *arguments: str) -> None:
                    cwd=str(directory), env=without_git_variables(dict(os.environ)), check=True, capture_output=True)
 
 
-def copy_of_the_repository(destination: pathlib.Path) -> pathlib.Path:
-    """The files that building needs, and not what an earlier build left, made a git repository of their own with one commit."""
+def copy_of_the_repository(destination: pathlib.Path, checksum: str) -> pathlib.Path:
+    """
+    The files that building needs, and not what an earlier build left, made a git repository of their own with
+    one commit. The copy expects the checksum given, that of the toy tarball, and not that of the real EnBiD.
+    """
     ignored = shutil.ignore_patterns('.git', '__pycache__', '*.egg-info', 'build', 'dist', 'log', 'Enbid-2.0', 'docs', '.github',
                                      'tests', '.mypy_cache', '.pytest_cache')
     shutil.copytree(ROOT, destination, ignore=ignored, symlinks=True)
+    constants = destination / 'src' / 'enbid_ananke' / '_constants.py'
+    text = constants.read_text()
+    replaced = re.sub(r"^ENBID_SHA256 = '[0-9a-f]{64}'$", f"ENBID_SHA256 = '{checksum}'", text, flags=re.MULTILINE)
+    assert replaced != text, "the checksum of EnBiD was not found in _constants.py"
+    constants.write_text(replaced)
     git(destination, 'init', '-q')
     git(destination, 'add', '-A')
     git(destination, 'commit', '-q', '-m', 'the copy')
@@ -133,7 +143,9 @@ def flows() -> Dict[str, Any]:
         site = work / 'site'
         site.mkdir()
         (site / 'sitecustomize.py').write_text(SITECUSTOMIZE)
-        (work / 'toy.tar.gz').write_bytes(toy_tarball())
+        toy = toy_tarball()
+        (work / 'toy.tar.gz').write_bytes(toy)
+        checksum = hashlib.sha256(toy).hexdigest()
         counter = work / 'counter'
         environment = dict(without_git_variables(dict(os.environ)), PYTHONPATH=str(site), ENBID_TOY_TARBALL=str(work / 'toy.tar.gz'),
                            COUNTER=str(counter))
@@ -149,7 +161,7 @@ def flows() -> Dict[str, Any]:
             result['builds'][label + name] = builds() - before
 
         # what pip does, with build isolation: it asks what is needed, what the package is, and then builds the wheel
-        tree = copy_of_the_repository(work / 'pip')
+        tree = copy_of_the_repository(work / 'pip', checksum)
         wheels = work / 'wheels'
         wheels.mkdir()
         for name in ('get_requires_for_build_wheel', 'prepare_metadata_for_build_wheel', 'build_wheel'):
@@ -166,7 +178,7 @@ def flows() -> Dict[str, Any]:
             result['dirty_sdist'] = sorted(member.name.split('/', 1)[1] for member in archive.getmembers() if member.isfile() and '/' in member.name)
 
         # what build does: the sdist, and then the wheel, from the sdist
-        tree = copy_of_the_repository(work / 'build')
+        tree = copy_of_the_repository(work / 'build', checksum)
         sdists = work / 'sdists'
         sdists.mkdir()
         for name in ('get_requires_for_build_sdist', 'build_sdist'):
