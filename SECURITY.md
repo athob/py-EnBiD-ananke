@@ -11,7 +11,7 @@ Please **do not open a public issue** for a security problem. Use GitHub's
 private reporting instead: on the repository page, open the **Security** tab and
 choose **Report a vulnerability**. Say what you found, how to reproduce it, and
 which version you were using. If you cannot use GitHub for this, email the
-maintainer at adrien.thob@gmail.com.
+maintainer at <adrien.thob@gmail.com>.
 
 You can expect an acknowledgement within a few days. A fix is released as a new
 version, and the report is credited in the release notes unless you prefer
