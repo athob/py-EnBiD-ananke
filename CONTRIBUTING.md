@@ -154,6 +154,16 @@ Scorecard also lists a few findings that are accepted rather than fixed, each fo
   It only matters when the tests run on a machine shared with other users (it is about
   pytest's temporary directories in `/tmp`), and it goes away with the support of those
   Pythons.
+- **Vulnerabilities, setuptools in the frozen test lock**:
+  [GHSA-h35f-9h28-mq5c](https://github.com/advisories/GHSA-h35f-9h28-mq5c) (CVE-2026-59890: on
+  macOS, the exclusions of a `MANIFEST.in` can be bypassed when an sdist is built) and
+  [GHSA-xmj3-9gf7-h52w](https://github.com/advisories/GHSA-xmj3-9gf7-h52w) (on Windows, a path
+  can escape while a legacy wheel is installed) affect the setuptools that the lock pins for
+  Python 3.8 and 3.9. Their fixes, 83.0.0 and 84.1.0, need Python 3.10 or later, so those two
+  Pythons cannot have them (the lock pins the fixed 84.2.1 for the others). The tests that use
+  this lock run on Linux only, and the release is built on Python 3.12 (`cd.yml`), with the
+  setuptools that its build environment resolves, which has the fixes. `check_dist.py` also
+  refuses an sdist that carries EnBiD, the one thing `MANIFEST.in` has to keep out.
 
 An alert is identified by the place it is raised at, so a dismissed one comes back as a new
 alert when a change moves its line. Check the list of open alerts first, then dismiss the
@@ -168,12 +178,15 @@ gh api "repos/athob/py-EnBiD-ananke/code-scanning/alerts?state=open&per_page=100
 done
 ```
 
-Dependabot raises the same pytest advisory as an alert of its own, against the frozen lock.
-Dismiss it as a tolerable risk, so that it does not try to open a security update for a lock
-that cannot take one:
+Dependabot raises these advisories as alerts of its own, against the frozen lock, and each
+new advisory on an old pin does the same. Before dismissing one, check that the pin for Python
+3.10 and later, in that lock and in `requirements-test.txt`, is a patched one: if it is not,
+the alert is real, and the lock needs updating. Dismiss the others as a tolerable risk, so
+that Dependabot does not try to open a security update for a lock that cannot take one (the
+number is in the alert's URL):
 
 ```bash
-gh api -X PATCH repos/athob/py-EnBiD-ananke/dependabot/alerts/1 -f state=dismissed \
+gh api -X PATCH repos/athob/py-EnBiD-ananke/dependabot/alerts/NUMBER -f state=dismissed \
   -f dismissed_reason=tolerable_risk \
   -f dismissed_comment="Test-time only. The fix needs Python 3.10 or later: see CONTRIBUTING.md."
 ```
