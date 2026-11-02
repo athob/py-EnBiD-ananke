@@ -88,24 +88,6 @@ def test_the_oldest_gpp_is_8_5(gpp, accepted):
                 build.verify_system_dependencies()
 
 
-# --- the files of the package
-
-@in_tmp_wd
-def test_all_files_lists_the_files_of_the_folders_relative_to_the_base():
-    for name in ('base/pkg/Enbid-2.0/src/Makefile', 'base/pkg/Enbid-2.0/Enbid.3d', 'base/pkg/__license__/LICENSE',
-                 'base/pkg/__init__.py'):
-        pathlib.Path(name).parent.mkdir(parents=True, exist_ok=True)
-        pathlib.Path(name).write_text('x')
-    files = build.all_files('Enbid-2.0', '__license__', basedir='base/pkg')
-    assert sorted(files) == ['Enbid-2.0/Enbid.3d', 'Enbid-2.0/src/Makefile', '__license__/LICENSE']   # not __init__.py
-
-
-@in_tmp_wd
-def test_all_files_of_a_folder_that_is_not_there_is_empty():
-    pathlib.Path('base').mkdir()
-    assert build.all_files('nothing', basedir='base') == []
-
-
 # --- downloading EnBiD
 
 def fake_download(members, top='Enbid-2.0'):

@@ -18,7 +18,6 @@ Contains the EnBiD module building utility tools. Credit to
 https://github.com/GalacticDynamics-Oxford/Agama/blob/master/setup.py.
 """
 import platform
-import os
 import pathlib
 import shutil
 import sys
@@ -71,30 +70,6 @@ def say(text: str) -> None:
         except (OSError, PermissionError):
             # /dev/tty may not exist or may not be writable!
             pass
-
-
-# get the list of all files in the given directories (including those in nested directories)
-def all_files(*paths: str, basedir: Union[str, pathlib.Path] = '.') -> List[str]:
-    """
-    List the files in the given folders, those in nested folders included.
-
-    Parameters
-    ----------
-    *paths : str
-        Folders, relative to ``basedir``.
-    basedir : str or pathlib.Path, optional
-        The folder the paths are relative to. Default to the current folder.
-
-    Returns
-    -------
-    files : list of str
-        The path of every file, relative to ``basedir``.
-    """
-    basedir = pathlib.Path(basedir)
-    return [str(pathlib.Path(dirpath, f).relative_to(basedir))
-            for path in paths
-            for dirpath, dirnames, files in os.walk(basedir / path)
-            for f in files]
 
 
 def verify_system_dependencies() -> None:
