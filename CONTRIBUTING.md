@@ -192,7 +192,9 @@ rather than bad luck.
   against Python 3.8, so a test does (it follows the oldest Python in `setup.py`, and relaxes
   when that is raised). Every function of the package, and of the tools that build it, is
   annotated, which another test checks, and mypy is told to refuse the ones of the package
-  that are not.
+  that are not. The package ships the `py.typed` marker ([PEP 561](https://peps.python.org/pep-0561/)),
+  so the type checkers of the people who use it read those hints: changing the type of an
+  argument or of a result of a public function changes the interface, and goes in the changelog.
 - **Docstrings** are in numpy style. Every function, class and method of the package, the tools
   that build EnBiD included, has one, and it is not empty. A function that takes parameters has
   a `Parameters` section that names each of them (`a, b : type` names two; the keywords of

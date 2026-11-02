@@ -15,6 +15,9 @@ history. The package did not start with 0.2.0: it had been in development since 
 
 ### Added
 
+- The package ships a `py.typed` marker ([PEP 561](https://peps.python.org/pep-0561/)), and the
+  `Typing :: Typed` classifier says so: the type checkers of the people who use it read its type
+  hints. A test checks that the wheel and the sdist hold the marker.
 - The download of EnBiD is checked against its SHA-256, which the package knows (`ENBID_SHA256`):
   another file stops the installation with a message that gives both checksums, and is not built.
 - Tests of how the package is built, with a toy EnBiD: how many times EnBiD is built by each of the

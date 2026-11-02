@@ -74,7 +74,8 @@ __classifiers__ = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: 3.15",
-    "Topic :: Scientific/Engineering :: Astronomy"
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Typing :: Typed"
     ]
 
 # CREDITS METADATA
