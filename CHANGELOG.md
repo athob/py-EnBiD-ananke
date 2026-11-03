@@ -3,15 +3,25 @@
 All notable changes to py-EnBiD-ananke are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
-the project follows [Semantic Versioning](https://semver.org/). The major number is
-still `0`, so a minor version can still change the interface; a `1.0.0` release is
-planned. A section is written for every release
-when it is made; those below were written afterwards, from the release notes and the
-history. The package did not start with 0.2.0: it had been in development since March
+the project follows [Semantic Versioning](https://semver.org/): since 1.0.0, a change that
+breaks the interface is a new major version. Before it the major number was `0`, and a minor
+version could change the interface (the sections say so when one did). A section is written
+for every release when it is made; those of the versions before 1.0.0 were written afterwards,
+from the release notes and the history. The package did not start with 0.2.0: it had been in development since March
 2022, in pre-releases that are summarized at the bottom, under
 [Before 0.2.0](#before-020).
 
 ## [Unreleased]
+
+## [1.0.0] - 2026-11-02
+
+The first stable release. The interface is stable from here on: Semantic Versioning applies, and a
+change that breaks it will be a new major version.
+
+What a user gets: Python 3.8 to 3.15, type hints that type checkers read (`py.typed`), EnBiD
+downloaded, checked against its SHA-256 and built once when the package is built, and a `caching`
+that no longer mistakes one input for another. The details follow, and so does the work on the
+repository (tests, CI and CD, locked tools, documentation) that the release was prepared with.
 
 ### Added
 
@@ -247,7 +257,8 @@ use `setuptools` in place of `distutils`, reorganize the metadata, the constants
 utilities, revise the way the particles are centered on the most clustered structure in
 the data, and start the caching work, which was released in 0.2.1.
 
-[Unreleased]: https://github.com/athob/py-EnBiD-ananke/compare/v0.3.3...develop
+[Unreleased]: https://github.com/athob/py-EnBiD-ananke/compare/v1.0.0...develop
+[1.0.0]: https://github.com/athob/py-EnBiD-ananke/compare/v0.3.3...v1.0.0
 [0.3.3]: https://github.com/athob/py-EnBiD-ananke/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/athob/py-EnBiD-ananke/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/athob/py-EnBiD-ananke/compare/v0.3.0...v0.3.1

@@ -2,8 +2,7 @@
 
 ## Supported versions
 
-py-EnBiD-ananke is in initial development (`0.x`). Security fixes go into the
-latest release only.
+Security fixes go into the latest release only.
 
 ## Reporting a vulnerability
 
