@@ -47,6 +47,11 @@ updates:
   #
   # `allow: all`, because most of what the locks hold (coverage, pluggy, the Sphinx stack...)
   # is not named in a .in file, and Dependabot proposes nothing for those by default.
+  #
+  # Known problem: GitHub refuses to open the pull requests (HTTP 400, reported as
+  # dependency_file_not_supported), whatever there is to update; see
+  # https://github.com/athob/py-EnBiD-ananke/issues/12. Until that changes the locks are
+  # refreshed by hand with update.sh --upgrade.
   - package-ecosystem: uv
     directory: /.github/requirements
     target-branch: develop

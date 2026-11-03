@@ -121,13 +121,16 @@ Docs installs too, and what the CD workflow builds with) are locked with hashes 
 [`.github/requirements/`](.github/requirements): each `requirements-X.in` says what is
 wanted, and `requirements-X.txt` pins every package, transitive ones included, to a version
 and to the hashes of its files, which `pip install --require-hashes` then insists on.
-Dependabot proposes updates to the locks, by running again the `uv pip compile` command a
-lock records in its header (which is why `dependabot.yml` says `uv`, not `pip`: pip-tools
-would resolve for one Python only). It takes one version of each package as the current one,
+Dependabot is set up to propose updates to the locks, by running again the `uv pip compile`
+command a lock records in its header (which is why `dependabot.yml` says `uv`, not `pip`:
+pip-tools would resolve for one Python only). GitHub currently refuses to open those pull
+requests (HTTP 400, see [issue #12](https://github.com/athob/py-EnBiD-ananke/issues/12)), so
+until that changes the locks are refreshed by hand, as described below. Dependabot takes one
+version of each package as the current one,
 and checks that the newest can be pinned for every Python the lock covers, so it cannot
 maintain a lock that holds a package once per Python. The test tools are therefore locked
 twice. `requirements-test.txt` covers the Pythons that are still supported (3.11 and up),
-and is maintained by Dependabot. `requirements-frozen/requirements-test.txt` is a complete
+and is the one Dependabot is set up to maintain. `requirements-frozen/requirements-test.txt` is a complete
 lock of every Python from the oldest the package supports (3.8) up, used by the ones at the
 end of their life (3.8 to 3.10). It is next to `requirements/` and not in it, because
 Dependabot fetches the subfolders of its folder too. Because it is complete, retiring a
@@ -136,7 +139,7 @@ add that Python to the matrix of `ci.yml` (the tests check that both agree), and
 `update.sh`. Never copy the live lock into `requirements-frozen/`, which would lose the
 entries of the older Pythons (the tests catch that too). `update.sh --upgrade` refreshes the
 frozen lock when that is worth it, and uv gives each Python the newest version it supports.
-To change a lock by hand, edit the `.in` file and run
+To refresh the locks, or to change one by hand (edit its `.in` file first), run
 `bash .github/requirements/update.sh` (add `--upgrade` to move everything to the newest
 versions; it needs [uv](https://docs.astral.sh/uv/)), then commit the `.txt` files it wrote.
 If a test then says that a lock pins a package more than once, that package has a newer
