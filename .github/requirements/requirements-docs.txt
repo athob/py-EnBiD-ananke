@@ -1041,19 +1041,11 @@ soupsieve==3.0.4 \
     --hash=sha256:8412826614f9c632227067d0985aeb9f584bd15efc852955430e097a9fe7afbf \
     --hash=sha256:924fab84ae21604c19e175e1f39815eb6fa83ba23836e09e9de180925e5bc4c0
     # via beautifulsoup4
-sphinx==9.1.1 ; python_full_version < '3.13' \
+sphinx==9.1.1 \
     --hash=sha256:48b627f02908f22c601b3ba9c7b17265b4f315dd05c8bc64cd4da41183f44fbc \
     --hash=sha256:f8b60013ce25017be41a509e5c2d265bc1918410061315c36b809c7f335646c0
     # via
-    #   myst-nb
-    #   myst-parser
-    #   pydata-sphinx-theme
-    #   sphinx-copybutton
-    #   sphinx-math-dollar
-sphinx==9.2.0 ; python_full_version >= '3.13' \
-    --hash=sha256:4c3ec13b612712c0d3ce4cbdd9e3eb91e68577e07a8e31f32f21cf178453578c \
-    --hash=sha256:90470459f3cab15d9dfed146c71cf77694b0445df17b2e0e69059cb9f7fc9ee4
-    # via
+    #   -r requirements-docs.in
     #   myst-nb
     #   myst-parser
     #   pydata-sphinx-theme

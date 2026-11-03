@@ -138,6 +138,10 @@ frozen lock when that is worth it, and uv gives each Python the newest version i
 To change a lock by hand, edit the `.in` file and run
 `bash .github/requirements/update.sh` (add `--upgrade` to move everything to the newest
 versions; it needs [uv](https://docs.astral.sh/uv/)), then commit the `.txt` files it wrote.
+If a test then says that a lock pins a package more than once, that package has a newer
+version that only newer Pythons can take: bound it in the `.in` file, with a comment that says
+until when (`sphinx<9.2` in `requirements-docs.in` is the example), because the ignores of
+`dependabot.yml` are not read by `update.sh`.
 The same script writes the checksum the actionlint download is checked against: run it
 again whenever `ACTIONLINT_VERSION` changes in `ci.yml`.
 
