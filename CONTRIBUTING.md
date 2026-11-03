@@ -100,7 +100,8 @@ jobs:
 - **package**: builds the sdist and the wheel the way a release would, then runs
   `twine check --strict` and `.github/scripts/check_dist.py`: the EnBiD executables
   have to be in the wheel, and be executable.
-- **docs**: builds the documentation, as Read the Docs does.
+- **docs**: builds the documentation, as Read the Docs does (the same Python, the same locked tools),
+  and a warning fails it.
 - **types**: checks the type hints of the package with [mypy](https://mypy.readthedocs.io/), on
   Python 3.12 (its settings are in `pyproject.toml`), and, in a second run with its own
   settings (`.github/mypy-build.ini`), the tools that build EnBiD, which `setup.py` imports
@@ -115,8 +116,8 @@ scanning; on `develop`, on pull requests and every Wednesday) and **Scorecard**
 supply-chain habits; from `main`, every Thursday). Their findings are meant to be
 looked at, and `stable` does not wait for them.
 
-The tools the workflows install (ruff, pytest, build and twine, the documentation tools, and
-what the CD workflow builds with) are locked with hashes in
+The tools the workflows install (ruff, pytest, build and twine, the documentation tools, which Read the
+Docs installs too, and what the CD workflow builds with) are locked with hashes in
 [`.github/requirements/`](.github/requirements): each `requirements-X.in` says what is
 wanted, and `requirements-X.txt` pins every package, transitive ones included, to a version
 and to the hashes of its files, which `pip install --require-hashes` then insists on.

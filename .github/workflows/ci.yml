@@ -176,8 +176,8 @@ jobs:
         pip install .
         pip install --require-hashes -r .github/requirements/requirements-docs.txt
     - name: Build the documentation
-      # warnings are printed, errors fail the build
-      run: sphinx-build -b dirhtml docs/source docs/_build
+      # a warning fails the build, as it does on Read the Docs (--keep-going prints them all)
+      run: sphinx-build -W --keep-going -b dirhtml docs/source docs/_build
 
   types:
     name: Check the type hints

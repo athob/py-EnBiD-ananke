@@ -13,6 +13,12 @@ from the release notes and the history. The package did not start with 0.2.0: it
 
 ## [Unreleased]
 
+### Changed
+
+- Read the Docs builds the documentation with the same Python (3.12) and the same locked
+  tools as the docs job of CI, where it used Python 3.9 and tools that were not pinned, and a
+  warning fails both builds. A test keeps the two builds the same.
+
 ## [1.0.0] - 2026-11-02
 
 The first stable release. The interface is stable from here on: Semantic Versioning applies, and a

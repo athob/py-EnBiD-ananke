@@ -1,3 +1,5 @@
+# The documentation tools, unpinned. requirements-docs.in (in .github/requirements/) includes this
+# file and update.sh locks it: CI and Read the Docs install the lock, not this file.
 sphinx-math-dollar
 sphinx-copybutton
 myst-parser>=3

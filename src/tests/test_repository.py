@@ -108,6 +108,29 @@ def test_the_cd_build_python_is_the_one_its_lock_is_compiled_for():
         f"cd.yml builds with Python {python.group(1)}.{python.group(2)}: run .github/requirements/update.sh"
 
 
+def _docs_job_of_ci():
+    return re.search(r"^  docs:\n(.*?)^  [\w-]+:\n", read(".github/workflows/ci.yml"), flags=re.MULTILINE | re.DOTALL).group(1)
+
+
+def test_read_the_docs_builds_with_the_python_and_the_lock_of_the_docs_job_of_ci():
+    # one build in two places: the same Python, and the tools of the same lock (the docs job says so)
+    rtd = read(".readthedocs.yaml")
+    header = "\n".join((REQUIREMENTS / "requirements-docs.txt").read_text(encoding="utf-8").splitlines()[:3])
+    lock_python = re.search(r"--python-version\s+(\d+\.\d+)\b", header).group(1)
+    rtd_python = re.search(r'^\s*python:\s*"(\d+\.\d+)"', rtd, flags=re.MULTILINE).group(1)
+    ci_python = re.search(r'python-version:\s*"(\d+\.\d+)"', _docs_job_of_ci()).group(1)
+    assert rtd_python == lock_python, f".readthedocs.yaml runs Python {rtd_python}, the docs lock is compiled for {lock_python}"
+    assert ci_python == lock_python, f"the docs job of CI runs Python {ci_python}, the docs lock is compiled for {lock_python}"
+    assert re.search(r"^\s*-\s*requirements:\s*\.github/requirements/requirements-docs\.txt\s*$", rtd, flags=re.MULTILINE), \
+        ".readthedocs.yaml has to install .github/requirements/requirements-docs.txt, the lock the docs job installs"
+
+
+def test_a_warning_fails_the_documentation_build_on_read_the_docs_and_in_ci():
+    assert re.search(r"^\s*fail_on_warning:\s*true\s*$", read(".readthedocs.yaml"), flags=re.MULTILINE), \
+        "fail_on_warning is not set in .readthedocs.yaml"
+    assert re.search(r"\bsphinx-build\s+-W\b", _docs_job_of_ci()), "the docs job of CI builds without -W"
+
+
 def test_ci_type_checks_the_tools_that_build_enbid_with_the_settings_made_for_them():
     ci = read(".github/workflows/ci.yml")
     assert "mypy --config-file .github/mypy-build.ini src/_build_utils.py" in ci
