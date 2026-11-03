@@ -74,6 +74,7 @@ docs/source/*
 !docs/source/*.*
 !docs/source/_templates
 !docs/source/_static
+docs/jupyter_execute/
 docs/_build/
 
 # PyBuilder
